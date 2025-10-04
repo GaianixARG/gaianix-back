@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  backend:
+    build: .
+    container_name: gaianix-backend
+    ports:
+      - "3000:3000" # Puerto expuesto en la máquina host
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=gaianix
+    depends_on:
+      - db
+    networks:
+      - gaianix-net
+
+  db:
+    image: postgres:17
+    container_name: gaianix-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: gaianix
+    ports:
+      - "5432:5432" # solo si querés conectarte desde tu máquina
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - gaianix-net
+
+volumes:
+  db_data:
+
+networks:
+  gaianix-net:

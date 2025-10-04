@@ -1,0 +1,38 @@
+[
+    {
+    "id": "1",
+    "name": "Maíz Premium",
+    "type": "Maíz",
+    "provider": "Proveedor A"
+  },
+  {
+    "id": "2",
+    "name": "Soja Alta Producción",
+    "type": "Soja",
+    "provider": "Proveedor B"
+  },
+  {
+    "id": "3",
+    "name": "Trigo Resistente",
+    "type": "Trigo",
+    "provider": "Proveedor C"
+  },
+  {
+    "id": "4",
+    "name": "Girasol Orgánico",
+    "type": "Girasol",
+    "provider": "Proveedor D"
+  },
+  {
+    "id": "5",
+    "name": "Cebada Especial",
+    "type": "Cebada",
+    "provider": "Proveedor E"
+  },
+  {
+    "id": "6",
+    "name": "Avena Nutritiva",
+    "type": "Avena",
+    "provider": "Proveedor F"
+  }
+]

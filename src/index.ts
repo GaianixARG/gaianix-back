@@ -1,14 +1,10 @@
-import express from "express";
-const app = express();
-app.use(express.json());
+import { createApp } from './app'
+import { OrderModelLocalPostgres } from './models/localhost-postgres/orders.models'
+import { SeedModelLocalPostgres } from './models/localhost-postgres/seeds.models'
+import { UserModelLocalPostgres } from './models/localhost-postgres/users.models'
 
-const PORT = 3000;
-
-app.get("/ping", (req, res) => {
-  console.log("PING");
-  res.send("PONG");
-});
-
-app.listen(PORT, () => {
-  console.log("Server running on port: " + PORT);
-});
+createApp({
+  orderModel: new OrderModelLocalPostgres(),
+  seedModel: new SeedModelLocalPostgres(),
+  userModel: new UserModelLocalPostgres()
+})

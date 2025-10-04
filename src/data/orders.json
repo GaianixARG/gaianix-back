@@ -1,0 +1,75 @@
+[
+  {
+    "id": "1",
+    "codigo": "S0001",
+    "type": "Siembra",
+    "title": "Siembra de maíz en lote norte",
+    "lote": "Lote Norte",
+    "dateOfCreation": "2025-08-19",
+    "status": "Pendiente",
+    "creator": {
+      "id": "1",
+      "name": "Gaspar",
+      "email": "gaspar@example.com",
+      "username": "gaspar",
+      "role": "Ingeniero"
+    },
+    "siembra": {
+      "fechaMaxSiembra": "2025-09-01",
+      "prioridad": "Alta",
+      "tipoSemilla": {
+        "id": "S-1",
+        "name": "Maíz Pioneer",
+        "type": "Maíz",
+        "provider": "Proveedor X"
+      },
+      "cantidadSemillasHa": 30000,
+      "cantidadHectareas": 10,
+      "fertilizante": "Urea",
+      "distanciaSiembra": 70
+    }
+  },
+  {
+    "id": "2",
+    "codigo": "R0002",
+    "type": "Riego",
+    "title": "Riego lote sur",
+    "lote": "Lote Sur",
+    "dateOfCreation": "2025-08-15",
+    "status": "En curso",
+    "creator": {
+      "id": "2",
+      "name": "Francisco",
+      "email": "fran@example.com",
+      "username": "francisco",
+      "role": "Operario"
+    },
+    "riego": {
+      "metodo": "Goteo",
+      "cantidadMm": 20,
+      "horas": 5
+    }
+  },
+  {
+    "id": "3",
+    "codigo": "C0003",
+    "type": "Cosecha",
+    "title": "Cosecha de trigo en lote central",
+    "lote": "Lote Central",
+    "dateOfCreation": "2025-08-10",
+    "status": "Completada",
+    "creator": {
+      "id": "1",
+      "name": "Gaspar",
+      "email": "gaspar@example.com",
+      "username": "gaspar",
+      "role": "Ingeniero"
+    },
+    "cosecha": {
+      "fechaCosecha": "2025-08-18",
+      "rendimientoEstimado": 5000,
+      "maquinaria": "Cosechadora John Deere",
+      "humedad": 12
+    }
+  }
+]
