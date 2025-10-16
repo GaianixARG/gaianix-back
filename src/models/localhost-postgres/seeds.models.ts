@@ -1,5 +1,6 @@
+import { randomUUID } from 'crypto'
 import pool from '../../config/db'
-import { KeysSeed } from '../../schemas/mappings'
+import { TablasMap } from '../../schemas/mappings'
 import { ISeed, ICreateSeed, seedSchema } from '../../schemas/seed.schema'
 import { BDService } from '../../services/bd.services'
 import { ETablas } from '../../types/enums'
@@ -7,18 +8,58 @@ import { ISeedModel } from '../definitions/seeds.models'
 
 export class SeedModelLocalPostgres implements ISeedModel {
   getAll = async (): Promise<ISeed[]> => {
-    const result = await pool.query(`SELECT * FROM ${ETablas.Seed} ORDER BY tipo DESC`)
-    return result.rows.map((row) => seedSchema.parse(row))
+    const table = ETablas.Seed
+    const mapTable = TablasMap[table].map
+    if (mapTable.type == null) return []
+
+    const result = await pool.query(`SELECT * FROM "${table}" ORDER BY ${mapTable.type} DESC`)
+    return result.rows.map((row) => {
+      const seedDt = BDService.getObjectFromTable(table, row)
+      return seedSchema.parse(seedDt)
+    })
+  }
+
+  getById = async (id: string): Promise<ISeed | undefined> => {
+    const table = ETablas.Seed
+    const mapTable = TablasMap[table].map
+    if (mapTable.id == null) return undefined
+
+    const result = await pool.query(`${BDService.querySelect(table)} WHERE ${mapTable.id} = $1`, [id])
+    if (result.rowCount == null || result.rowCount === 0) return undefined
+
+    const seedDt = BDService.getObjectFromTable(table, result.rows[0])
+    return seedSchema.parse(seedDt)
   }
 
   create = async (seed: ICreateSeed): Promise<ISeed> => {
-    const datosInsert = BDService.queryInsert<KeysSeed, ICreateSeed>(ETablas.Seed, seed)
+    const newSeed: ISeed = {
+      ...seed,
+      id: randomUUID()
+    }
+
+    const datosInsert = BDService.queryInsert<ISeed>(ETablas.Seed, newSeed)
     const result = await pool.query(`${datosInsert.query}`, datosInsert.values)
     if (result == null || result.rowCount === 0) throw new Error('Error al crear la semilla')
 
-    return {
-      id: result.rows[0],
-      ...seed
-    }
+    return newSeed
+  }
+
+  update = async (id: string, seed: ISeed): Promise<void> => {
+    const table = ETablas.Seed
+    const mapTable = TablasMap[table].map
+    if (mapTable.id == null) throw new Error('Error al actualizar la semilla')
+
+    const { id: idFert, ...updateSeed } = seed
+    const datosUpdate = BDService.queryUpdate<ICreateSeed>(table, updateSeed)
+
+    const result = await pool.query(`${datosUpdate.query} WHERE ${mapTable.id} = $${datosUpdate.values.length + 1}`, [...datosUpdate.values, id])
+    if (result == null || result.rowCount === 0) throw new Error('Error al actualizar la semilla')
+  }
+
+  remove = async (id: string): Promise<void> => {
+    const queryRemove = BDService.queryRemoveById(ETablas.Seed)
+    if (queryRemove === '') throw new Error('Error al eliminar la semilla')
+
+    await pool.query(queryRemove, [id])
   }
 }

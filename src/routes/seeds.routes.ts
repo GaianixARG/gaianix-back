@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { ISeedController, SeedController } from '../controllers/seeds.controller'
-import { createSeedSchema } from '../schemas/seed.schema'
+import { createSeedSchema, seedSchema } from '../schemas/seed.schema'
 import { validateBody } from '../middlewares/validateBody'
 import { authenticateJWT } from '../middlewares/auth'
 
@@ -32,6 +32,8 @@ export const createSeedRouter = (models: ISeedController): Router => {
      */
   seedRouter.get('/', authenticateJWT, seedController.getSeeds)
 
+  seedRouter.get('/:id', authenticateJWT, seedController.getSeedById)
+
   /**
      * @swagger
      * /seeds:
@@ -52,6 +54,10 @@ export const createSeedRouter = (models: ISeedController): Router => {
      *         description: Semilla creada
      */
   seedRouter.post('/', authenticateJWT, validateBody(createSeedSchema), seedController.createSeed)
+
+  seedRouter.put('/:id', authenticateJWT, validateBody(seedSchema), seedController.updateSeed)
+
+  seedRouter.delete('/:id', authenticateJWT, seedController.removeSeed)
 
   return seedRouter
 }

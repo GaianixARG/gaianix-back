@@ -6,17 +6,21 @@
     "title": "Siembra de maíz en lote norte",
     "lote": "Lote Norte",
     "dateOfCreation": "2025-08-19",
-    "status": "Pendiente",
+    "status": 1,
+    "prioridad": 1,
     "creator": {
       "id": "1",
       "name": "Gaspar",
       "email": "gaspar@example.com",
       "username": "gaspar",
-      "role": "Ingeniero"
+      "role": {
+        "id": "1",
+        "name": "Ingeniero"
+      }
     },
     "siembra": {
+      "id": "1",
       "fechaMaxSiembra": "2025-09-01",
-      "prioridad": "Alta",
       "tipoSemilla": {
         "id": "S-1",
         "name": "Maíz Pioneer",
@@ -32,19 +36,24 @@
   {
     "id": "2",
     "codigo": "R0002",
-    "type": "Riego",
+    "type": "Fertilizacion",
     "title": "Riego lote sur",
     "lote": "Lote Sur",
     "dateOfCreation": "2025-08-15",
-    "status": "En curso",
+    "status": 1,
+    "prioridad": 1,
     "creator": {
       "id": "2",
       "name": "Francisco",
       "email": "fran@example.com",
       "username": "francisco",
-      "role": "Operario"
+      "role": {
+        "id": "2",
+        "name": "Operario"
+      }
     },
-    "riego": {
+    "fertilizacion": {
+      "id": "1",
       "metodo": "Goteo",
       "cantidadMm": 20,
       "horas": 5
@@ -57,15 +66,20 @@
     "title": "Cosecha de trigo en lote central",
     "lote": "Lote Central",
     "dateOfCreation": "2025-08-10",
-    "status": "Completada",
+    "status": 1,
+    "prioridad": 1,
     "creator": {
       "id": "1",
       "name": "Gaspar",
       "email": "gaspar@example.com",
       "username": "gaspar",
-      "role": "Ingeniero"
+      "role": {
+        "id": "1",
+        "name": "Ingeniero"
+      }
     },
     "cosecha": {
+      "id": "1",
       "fechaCosecha": "2025-08-18",
       "rendimientoEstimado": 5000,
       "maquinaria": "Cosechadora John Deere",

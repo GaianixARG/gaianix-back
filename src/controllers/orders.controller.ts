@@ -1,15 +1,17 @@
 import { Request, Response } from 'express'
 import { IOrder, ICreateOrder } from '../schemas/order.schema'
 import sendData from './response.controller'
-import { EHttpStatusCode } from '../types/enums'
+import { EHttpStatusCode, EOrderType } from '../types/enums'
 import { getValidatedBody } from '../middlewares/validateBody'
 import { getUserSession } from '../middlewares/auth'
 import { IOrderModel } from '../models/definitions/orders.models'
 import { IUserModel } from '../models/definitions/users.models'
+import { ILoteModel } from '../models/definitions/lote.models'
 
 export interface IOrderController {
   orderModel: IOrderModel
   userModel: IUserModel
+  loteModel: ILoteModel
 }
 
 export class OrderController {
@@ -19,11 +21,16 @@ export class OrderController {
     this.models = models
   }
 
-  getOrders = async (_req: Request, res: Response): Promise<void> => {
+  getOrders = async (req: Request, res: Response): Promise<void> => {
     let orders: IOrder[] = []
     let exito: boolean = true
     try {
-      orders = await this.models.orderModel.getAll()
+      const typeParam = req.query.type
+      if (typeParam == null) orders = await this.models.orderModel.getAll()
+      else {
+        const type = typeParam as EOrderType
+        orders = await this.models.orderModel.getByType(type)
+      }
     } catch (err) {
       exito = false
       console.log(err)
@@ -51,13 +58,63 @@ export class OrderController {
   createOrder = async (req: Request, res: Response): Promise<void> => {
     const bodyOrder = getValidatedBody<ICreateOrder>(req)
     const userSession = getUserSession(req)
-    const user = await this.models.userModel.getById(userSession.id)
-    if (user == null) {
-      sendData(res, EHttpStatusCode.BAD_REQUEST, { exito: false, message: 'Usuario inexistente' })
-      return
-    }
 
-    const newOrder = await this.models.orderModel.create(bodyOrder, user)
-    sendData(res, EHttpStatusCode.OK_CREATED, { exito: true, data: newOrder })
+    try {
+      const user = await this.models.userModel.getById(userSession.id)
+      if (user == null) {
+        sendData(res, EHttpStatusCode.BAD_REQUEST, { exito: false, message: 'Usuario inexistente' })
+        return
+      }
+
+      const lote = await this.models.loteModel.getById(bodyOrder.lote.id)
+      if (lote == null) {
+        sendData(res, EHttpStatusCode.BAD_REQUEST, { exito: false, message: 'Debe seleccionar un lote' })
+        return
+      }
+
+      const newOrder = await this.models.orderModel.create(bodyOrder, user, lote)
+      sendData(res, EHttpStatusCode.OK_CREATED, { exito: true, data: newOrder })
+    } catch {
+      sendData(res, EHttpStatusCode.BAD_REQUEST, { exito: false, message: 'Error al crear la orden' })
+    }
+  }
+
+  updateOrder = async (req: Request, res: Response): Promise<void> => {
+    const id = req.params.id
+    const bodyOrder = getValidatedBody<IOrder>(req)
+
+    let exito = true
+    try {
+      const lote = await this.models.loteModel.getById(bodyOrder.lote.id)
+      if (lote == null) {
+        sendData(res, EHttpStatusCode.BAD_REQUEST, { exito: false, message: 'Debe seleccionar un lote' })
+        return
+      }
+
+      await this.models.orderModel.update(id, bodyOrder, lote)
+    } catch (error) {
+      exito = false
+    } finally {
+      sendData(res,
+        exito ? EHttpStatusCode.OK_NO_CONTENT : EHttpStatusCode.BAD_REQUEST,
+        exito ? undefined : { exito, message: 'Error al editar la orden' }
+      )
+    }
+  }
+
+  removeOrder = async (req: Request, res: Response): Promise<void> => {
+    const id = req.params.id
+
+    let exito = true
+    try {
+      await this.models.orderModel.remove(id)
+    } catch (error) {
+      exito = false
+    } finally {
+      sendData(res,
+        exito ? EHttpStatusCode.OK_NO_CONTENT : EHttpStatusCode.BAD_REQUEST,
+        exito ? undefined : { exito, message: 'Error al editar la orden' }
+      )
+    }
   }
 }

@@ -1,7 +1,11 @@
-import { Pool } from 'pg'
+import pg from 'pg'
 import { config } from './env'
 
-const pool = new Pool({
+pg.types.setTypeParser(pg.types.builtins.NUMERIC, (value: string) => {
+  return parseFloat(value)
+})
+
+const pool = new pg.Pool({
   connectionString: config.databaseUrl,
   ssl: config.nodeEnv === 'production' ? { rejectUnauthorized: false } : undefined
 })

@@ -1,7 +1,10 @@
 import { IDatosSemilla, IDatosSiembra, IOrderCosecha, IOrderSiembra, IOrderFertilizacion, IDatosFertilizacion, IDatosCosecha, IOrder, IOrderBase } from '../schemas/order.schema'
-import { ISeed } from '../schemas/seed.schema'
+import { ICreateSeed, ISeed } from '../schemas/seed.schema'
 import { IRol, IUser } from '../schemas/user.schema'
 import { EOrderType, ETablas } from '../types/enums'
+import { ICampo } from './campo.schema'
+import { ICreateFertilizer, IFertilizer } from './fertilizer.schema'
+import { ILote } from './lote.schema'
 
 // #region UTILS
 export type Keys<T> = keyof T
@@ -25,12 +28,39 @@ export const UserMap: Record<KeysUser, string> = {
 }
 // #endregion
 
+// #region Fertilizer
+export type KeysFertilizer = Keys<IFertilizer>
+export type KeysCreateFertilizer = Keys<ICreateFertilizer>
+export const FertilizerMap: Record<KeysFertilizer, string> = {
+  id: 'fer_id',
+  name: 'fer_nombre'
+}
+// #endregion
+
 // #region SEED
 export type KeysSeed = Keys<ISeed>
+export type KeysCreateSeed = Keys<ICreateSeed>
 export const SeedMap: Record<KeysSeed, string> = {
   id: 'sem_id',
   name: 'sem_nombre',
   type: 'sem_tipo'
+}
+// #endregion
+
+// #region Campo
+export type KeysCampo = Keys<ICampo>
+export type KeysLote = Keys<ILote>
+
+export const CampoMap: Record<KeysCampo, string> = {
+  id: 'cam_id',
+  nombre: 'cam_nombre'
+}
+
+export const LoteMap: Record<KeysLote, string> = {
+  id: 'lot_id',
+  codigo: 'lot_codigo',
+  campo: 'lot_campo'
+
 }
 // #endregion
 
@@ -53,7 +83,9 @@ export const DatosOrdenSiembraMap: Record<KeysDatosSiembra, string> = {
   id: 'ods_id',
   datosSemilla: 'ods_datos_semilla',
   fechaMaxSiembra: 'ods_fecha_max_siembra',
-  distanciaSiembra: 'ods_distancia_siembra_en_m2'
+  distanciaSiembra: 'ods_distancia_siembra_en_m2',
+  cantidadHectareas: 'ods_cantidad_hectareas',
+  fertilizante: 'ods_fertilizante'
 }
 // #endregion
 
@@ -116,7 +148,6 @@ export const TablasMap: Record<ETablas, UsosTabla<any, any>> = {
     values: (objKeys: KeysUser[], datos: IUser) => {
       return objKeys.map((k) => {
         switch (k) {
-          case 'id': return 'gen_random_uuid()'
           default: return datos[k]
         }
       })
@@ -130,7 +161,6 @@ export const TablasMap: Record<ETablas, UsosTabla<any, any>> = {
     values: (objKeys: KeysSeed[], datos: ISeed) => {
       return objKeys.map((k) => {
         switch (k) {
-          case 'id': return 'gen_random_uuid()'
           default: return datos[k]
         }
       })
@@ -144,18 +174,17 @@ export const TablasMap: Record<ETablas, UsosTabla<any, any>> = {
       [ETablas.OrdenSiembra]: 'odt_id_siembra',
       [ETablas.OrdenFertilizacion]: 'odt_id_fertilizacion',
       [ETablas.OrdenCosecha]: 'odt_id_cosecha',
-      [ETablas.User]: 'odt_alta_usuario'
+      [ETablas.User]: 'odt_alta_usuario',
+      [ETablas.Lote]: 'odt_lote'
     },
     values: (objKeys: KeysOrden[], datos: IOrder) => {
       return objKeys.map((k) => {
         switch (k) {
-          case 'id': return 'gen_random_uuid()'
           case 'creator': return datos.creator.id
-          case 'codigo': return datos.codigo
-          case 'dateOfCreation': return 'CURRENT_DATE'
           case 'siembra': return datos.type === EOrderType.Siembra ? datos.siembra.id : null
           case 'cosecha': return datos.type === EOrderType.Cosecha ? datos.cosecha.id : null
           case 'fertilizacion': return datos.type === EOrderType.Fertilizacion ? datos.fertilizacion.id : null
+          case 'lote': return datos.lote.id
           default: return datos[k]
         }
       })
@@ -166,13 +195,14 @@ export const TablasMap: Record<ETablas, UsosTabla<any, any>> = {
     alias: 'ods',
     map: DatosOrdenSiembraMap,
     rels: {
-      [ETablas.DatosSemillaXSiembra]: 'ods_datos_semilla'
+      [ETablas.SemillaPorSiembra]: 'ods_datos_semilla',
+      [ETablas.Fertilizante]: 'ods_fertilizante'
     },
     values: (objKeys: KeysDatosSiembra[], datos: IDatosSiembra) => {
       return objKeys.map((k) => {
         switch (k) {
-          case 'id': return 'gen_random_uuid()'
           case 'datosSemilla': return datos.datosSemilla.id
+          case 'fertilizante': return datos.fertilizante?.id
           default: return datos[k]
         }
       })
@@ -186,7 +216,6 @@ export const TablasMap: Record<ETablas, UsosTabla<any, any>> = {
     values: (objKeys: KeysDatosCosecha[], datos: IDatosCosecha) => {
       return objKeys.map((k) => {
         switch (k) {
-          case 'id': return 'gen_random_uuid()'
           default: return datos[k]
         }
       })
@@ -196,17 +225,19 @@ export const TablasMap: Record<ETablas, UsosTabla<any, any>> = {
     dt: 'OrdenFertilizacion',
     alias: 'odf',
     map: DatosOrdenFertilizacionMap,
-    rels: {},
+    rels: {
+      [ETablas.Fertilizante]: 'odf_fertilizante'
+    },
     values: (objKeys: KeysDatosFertilizacion[], datos: IDatosFertilizacion) => {
       return objKeys.map((k) => {
         switch (k) {
-          case 'id': return 'gen_random_uuid()'
+          case 'fertilizante': return datos.fertilizante.id
           default: return datos[k]
         }
       })
     }
   },
-  [ETablas.DatosSemillaXSiembra]: {
+  [ETablas.SemillaPorSiembra]: {
     dt: 'SemillaXSiembra',
     alias: 'sxs',
     map: DatosSemillaMap,
@@ -216,7 +247,6 @@ export const TablasMap: Record<ETablas, UsosTabla<any, any>> = {
     values: (objKeys: KeysDatosSemilla[], datos: IDatosSemilla) => {
       return objKeys.map((k) => {
         switch (k) {
-          case 'id': return 'gen_random_uuid()'
           case 'semilla': return datos.semilla.id
           default: return datos[k]
         }
@@ -231,7 +261,48 @@ export const TablasMap: Record<ETablas, UsosTabla<any, any>> = {
     values: (objKeys: KeysRol[], datos: IRol) => {
       return objKeys.map((k) => {
         switch (k) {
-          case 'id': return 'gen_random_uuid()'
+          default: return datos[k]
+        }
+      })
+    }
+  },
+  [ETablas.Campo]: {
+    dt: 'Campo',
+    alias: 'cam',
+    map: CampoMap,
+    rels: {},
+    values: (objKeys: KeysCampo[], datos: ICampo) => {
+      return objKeys.map((k) => {
+        switch (k) {
+          default: return datos[k]
+        }
+      })
+    }
+  },
+  [ETablas.Lote]: {
+    dt: 'Lote',
+    alias: 'lot',
+    map: LoteMap,
+    rels: {
+      [ETablas.Campo]: 'lot_campo'
+    },
+    values: (objKeys: KeysLote[], datos: ILote) => {
+      return objKeys.map((k) => {
+        switch (k) {
+          case 'campo': return datos.campo.id
+          default: return datos[k]
+        }
+      })
+    }
+  },
+  [ETablas.Fertilizante]: {
+    dt: 'Fertilizante',
+    alias: 'fer',
+    map: FertilizerMap,
+    rels: {},
+    values: (objKeys: KeysFertilizer[], datos: IFertilizer) => {
+      return objKeys.map((k) => {
+        switch (k) {
           default: return datos[k]
         }
       })

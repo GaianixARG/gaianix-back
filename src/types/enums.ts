@@ -48,12 +48,13 @@ export enum EHttpStatusCode {
   NOT_FOUND = 404,
   // correct
   OK = 200,
-  OK_CREATED = 201
+  OK_CREATED = 201,
+  OK_NO_CONTENT = 204,
 }
 
 export enum ECookie {
-  ACCESS_TOKEN = 'access_token',
-  REFRESH_TOKEN = 'refresh_token'
+  ACCESS_TOKEN = 'gaianix_access_token',
+  REFRESH_TOKEN = 'gaianix_refresh_token'
 }
 
 export enum ETablas {
@@ -64,5 +65,8 @@ export enum ETablas {
   OrdenSiembra = 'OrdenSiembra',
   OrdenCosecha = 'OrdenCosecha',
   OrdenFertilizacion = 'OrdenFertilizacion',
-  DatosSemillaXSiembra = 'SemillaXSiembra'
+  SemillaPorSiembra = 'SemillaXSiembra',
+  Campo = 'Campo',
+  Lote = 'Lote',
+  Fertilizante = 'Fertilizante'
 }

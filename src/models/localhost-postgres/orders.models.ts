@@ -1,87 +1,85 @@
-import { IOrder, ICreateOrder, IDatosSemilla, IDatosSiembra, IDatosFertilizacion, IDatosCosecha, ICreateDatosSiembra, ICreateDatosCosecha, ICreateDatosFertilizacion, ICreateDatosSemilla, IOrderBase, IOrderSiembra, IOrderFertilizacion, IOrderCosecha, orderSchema } from '../../schemas/order.schema'
+import { IOrder, ICreateOrder, orderSchema, IOrderBase } from '../../schemas/order.schema'
 import { IUserPrivate } from '../../schemas/user.schema'
 import pool from '../../config/db'
-import { IOrderModel } from '../definitions/orders.models'
+import { IOrderModel, IOrderModels } from '../definitions/orders.models'
 import { EOrderType, ETablas } from '../../types/enums'
 import { BDService } from '../../services/bd.services'
-import { KeysDatosCosecha, KeysDatosFertilizacion, KeysDatosSemilla, KeysDatosSiembra, KeysOrden, TablasMap } from '../../schemas/mappings'
-
-const querySelectOdT = (): string => `SELECT *
-  FROM "${ETablas.Order}"
-  ${BDService.queryJoin('INNER', ETablas.Order, ETablas.User)}
-  ${BDService.queryJoin('INNER', ETablas.User, ETablas.Rol)}
-  ${BDService.queryJoin('LEFT', ETablas.Order, ETablas.OrdenSiembra)}
-  ${BDService.queryJoin('LEFT', ETablas.OrdenSiembra, ETablas.DatosSemillaXSiembra)}
-  ${BDService.queryJoin('LEFT', ETablas.DatosSemillaXSiembra, ETablas.Seed)}
-  ${BDService.queryJoin('LEFT', ETablas.Order, ETablas.OrdenCosecha)}
-  ${BDService.queryJoin('LEFT', ETablas.Order, ETablas.OrdenFertilizacion)}`
-
-const queryGetNewCode = (type: EOrderType): string => `WITH ultimo AS (
-  SELECT
-    MAX(CAST(SUBSTRING(codigo, 2) AS INTEGER)) AS max_num
-    FROM "OrdenDeTrabajo"
-    WHERE tipo = '${type}'
-  )
-  SELECT
-    CONCAT(
-      '${type}',
-      LPAD((COALESCE(ultimo.max_num, 0) + 1)::text, 5, '0')
-    ) AS nuevo_codigo
-  FROM ultimo;`
+import { TablasMap } from '../../schemas/mappings'
+import { ILote } from '../../schemas/lote.schema'
+import { randomUUID } from 'crypto'
+import { queryGetNewCode, querySelectOrdenByType } from '../../utils/order.utils'
 
 export class OrderModelLocalPostgres implements IOrderModel {
+  models: IOrderModels
+
+  constructor (models: IOrderModels) {
+    this.models = models
+  }
+
   getAll = async (): Promise<IOrder[]> => {
     const mapTable = TablasMap[ETablas.Order].map
     if (mapTable.dateOfCreation == null) return []
-    const result = await pool.query(`${querySelectOdT()} ORDER BY ${mapTable.dateOfCreation} DESC`)
+    const result = await pool.query(`${querySelectOrdenByType()} ORDER BY ${mapTable.dateOfCreation} DESC`)
 
-    return result.rows.map((row) => BDService.getObjectFromTable(ETablas.Order, row))
+    return result.rows.map((row) => {
+      const orderDt = BDService.getObjectFromTable(ETablas.Order, row)
+      return orderSchema.parse(orderDt)
+    })
   }
 
   getById = async (id: string): Promise<IOrder | undefined> => {
-    const mapTable = TablasMap[ETablas.Order].map
+    const table = ETablas.Order
+    const mapTable = TablasMap[table].map
     if (mapTable.id == null) return undefined
 
-    const result = await pool.query(`${querySelectOdT()} WHERE ${mapTable.id} = $1`, [id])
+    const result = await pool.query(`${querySelectOrdenByType()} WHERE ${mapTable.id} = $1`, [id])
     if (result.rowCount == null || result.rowCount === 0) return undefined
 
-    const orderDt = BDService.getObjectFromTable(ETablas.Order, result.rows[0])
-
-    const order: IOrder = orderSchema.parse(orderDt)
-    return order
+    const orderDt = BDService.getObjectFromTable(table, result.rows[0])
+    return orderSchema.parse(orderDt)
   }
 
-  create = async (order: ICreateOrder, creator: IUserPrivate): Promise<IOrder> => {
-    // crear la orden
-    const queryInsertOdt = BDService.queryInsert<KeysOrden, ICreateOrder>(ETablas.Order, order)
-    const nuevoCodigoOrden = await this.getNewCodeOrder(order.type)
+  getByType = async (type: EOrderType): Promise<IOrder[]> => {
+    switch (type) {
+      case EOrderType.Siembra: return await this.models.orderSiembraModel.getAll()
+      case EOrderType.Cosecha: return await this.models.orderCosechaModel.getAll()
+      case EOrderType.Fertilizacion: return await this.models.orderFertilizacionModel.getAll()
+      default: return []
+    }
+  }
 
-    const newOrderBase: IOrderBase = {
-      // no importan pq lo insertamos en la base
-      id: '',
-      dateOfCreation: '',
-      // estos si importan
+  create = async (order: ICreateOrder, creator: IUserPrivate, lote: ILote): Promise<IOrder> => {
+    const nuevoCodigoOrden = await this.getNewCodeOrder(order.type)
+    if (nuevoCodigoOrden == null) throw new Error('Error al crear la orden de trabajo')
+
+    const orderBase: IOrderBase = {
+      ...order,
+      lote,
       creator,
       codigo: nuevoCodigoOrden,
-      title: order.title,
-      type: order.type,
-      status: order.status,
-      lote: order.lote,
-      prioridad: order.prioridad
+      dateOfCreation: new Date().toISOString(),
+      id: randomUUID()
     }
 
-    const newOrder = await this.createOrderByType(newOrderBase, order)
+    const newOrder = await this.createOrderByType(orderBase, order)
     if (newOrder == null) throw new Error('Error al crear la orden de trabajo')
 
-    const result = await pool.query(`${queryInsertOdt.query}`, queryInsertOdt.values)
+    const queryInsertOdt = BDService.queryInsert<IOrder>(ETablas.Order, newOrder)
+    const result = await pool.query(queryInsertOdt.query, queryInsertOdt.values)
     if (result.rowCount == null || result.rowCount === 0) throw new Error('Error al crear la orden de trabajo')
-    const orderCreated = result.rows[0]
 
-    return {
-      ...newOrder,
-      id: orderCreated.id,
-      dateOfCreation: orderCreated.dateOfCreation
-    }
+    return newOrder
+  }
+
+  update = async (_id: string, _order: ICreateOrder, _lote: ILote): Promise<void> => {
+
+  }
+
+  remove = async (id: string): Promise<void> => {
+    await this.removeByType(id)
+
+    const query = BDService.queryRemoveById(ETablas.Order)
+    await pool.query(query, [id])
   }
 
   // #region Utils
@@ -92,94 +90,25 @@ export class OrderModelLocalPostgres implements IOrderModel {
     return result.rows[0]?.codigo ?? ''
   }
 
-  createDataSemillaPorSiembra = async (datos: ICreateDatosSemilla): Promise<IDatosSemilla> => {
-    const tabla = ETablas.DatosSemillaXSiembra
-    const queryInsertDatos = BDService.queryInsert<KeysDatosSemilla, ICreateDatosSemilla>(tabla, datos)
-
-    const result = await pool.query(`${queryInsertDatos.query}`, queryInsertDatos.values)
-    if (result.rowCount == null || result.rowCount === 0) throw new Error('Error al insertar los datos de la siembra')
-    const semillaXSiembraId = result.rows[0].id
-    return {
-      ...datos,
-      id: semillaXSiembraId
-    }
-  }
-
-  createDataOrdenSiembra = async (datos: ICreateDatosSiembra): Promise<IDatosSiembra> => {
-    // creo la asociación con la semilla (SemillaXSiembra)
-    const semillaXSiembra = await this.createDataSemillaPorSiembra(datos.datosSemilla)
-
-    const tabla = ETablas.OrdenSiembra
-    const queryInsertDatos = BDService.queryInsert<KeysDatosSiembra, ICreateDatosSiembra>(tabla, datos)
-
-    const result = await pool.query(`${queryInsertDatos.query}`, queryInsertDatos.values)
-    if (result.rowCount == null || result.rowCount === 0) throw new Error('Error al insertar la Orden de Trabajo de Siembra')
-    const datosSiembraId = result.rows[0].id
-
-    return {
-      ...datos,
-      id: datosSiembraId,
-      datosSemilla: semillaXSiembra
-    }
-  }
-
-  createDataOrdenCosecha = async (datos: ICreateDatosCosecha): Promise<IDatosCosecha> => {
-    const tabla = ETablas.OrdenCosecha
-    const queryInsertDatos = BDService.queryInsert<KeysDatosCosecha, ICreateDatosCosecha>(tabla, datos)
-
-    const result = await pool.query(`${queryInsertDatos.query}`, queryInsertDatos.values)
-    if (result.rowCount == null || result.rowCount === 0) throw new Error('Error al insertar los datos de la cosecha')
-    const datosCosechaId = result.rows[0].id
-    return {
-      ...datos,
-      id: datosCosechaId
-    }
-  }
-
-  createDataOrdenFertilizacion = async (datos: ICreateDatosFertilizacion): Promise<IDatosFertilizacion> => {
-    const tabla = ETablas.OrdenFertilizacion
-    const queryInsertDatos = BDService.queryInsert<KeysDatosFertilizacion, ICreateDatosFertilizacion>(tabla, datos)
-
-    const result = await pool.query(`${queryInsertDatos.query}`, queryInsertDatos.values)
-    if (result.rowCount == null || result.rowCount === 0) throw new Error('Error al insertar los datos de la fertlizacion')
-    const datosFertilziacionId = result.rows[0].id
-    return {
-      ...datos,
-      id: datosFertilziacionId
-    }
-  }
-
   createOrderByType = async (orderBase: IOrderBase, order: ICreateOrder): Promise<IOrder | null> => {
-    if (order.type === EOrderType.Siembra) {
-      const newOrderSiembra: IOrderSiembra = {
-        ...orderBase,
-        type: EOrderType.Siembra,
-        siembra: await this.createDataOrdenSiembra(order.siembra)
-      }
-
-      return newOrderSiembra
-    }
-    if (order.type === EOrderType.Cosecha) {
-      const newOrderCosecha: IOrderCosecha = {
-        ...orderBase,
-        type: EOrderType.Cosecha,
-        cosecha: await this.createDataOrdenCosecha(order.cosecha)
-      }
-
-      return newOrderCosecha
-    }
-    if (order.type === EOrderType.Fertilizacion) {
-      const newOrderFertilizacion: IOrderFertilizacion = {
-        ...orderBase,
-        type: EOrderType.Fertilizacion,
-        fertilizacion: await this.createDataOrdenFertilizacion(order.fertilizacion)
-      }
-
-      return newOrderFertilizacion
-    }
+    if (order.type === EOrderType.Siembra) return await this.models.orderSiembraModel.create(orderBase, order.siembra)
+    if (order.type === EOrderType.Cosecha) return await this.models.orderCosechaModel.create(orderBase, order.cosecha)
+    if (order.type === EOrderType.Fertilizacion) return await this.models.orderFertilizacionModel.create(orderBase, order.fertilizacion)
 
     return null
   }
   // #endregion
+
+  // #region UpdateOrder
+  // #endregion
+
+  // #region RemoveOrder
+  removeByType = async (orderId: string): Promise<void> => {
+    await this.models.orderSiembraModel.remove(orderId)
+    await this.models.orderFertilizacionModel.remove(orderId)
+    await this.models.orderCosechaModel.remove(orderId)
+  }
+  // #endregion
+
   // #endregion
 }

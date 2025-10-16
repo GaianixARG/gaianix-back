@@ -2,19 +2,31 @@ import { z } from 'zod'
 import { userPrivateSchema } from './user.schema'
 import { seedSchema } from './seed.schema'
 import { EOrderType, EPrioridad, EStatus } from '../types/enums'
+import { loteSchema } from './lote.schema'
+import { fertilizerSchema } from './fertilizer.schema'
 
 // Base de Order
-export const orderBaseSchema = z.object({
+const createOmits = {
+  id: true,
+  dateOfCreation: true,
+  codigo: true,
+  creator: true
+} as const
+
+const datosOrderBaseSchema = z.object({
   id: z.uuid(),
   codigo: z.string(),
   title: z.string(),
   type: z.enum(EOrderType),
   status: z.enum(EStatus),
-  lote: z.string(),
   dateOfCreation: z.iso.datetime(),
   creator: userPrivateSchema,
   prioridad: z.enum(EPrioridad)
 })
+
+export const orderBaseSchema = datosOrderBaseSchema.extend({ lote: loteSchema })
+
+export const createOrderBaseSchema = orderBaseSchema.omit(createOmits).extend({ lote: loteSchema.pick({ id: true }) })
 
 export const DDMMYYYY_REGEX = /^([0-2]\d|3[01])\/(0\d|1[0-2])\/\d{4}$/
 
@@ -34,7 +46,9 @@ const baseSchemaDatosSiembraSchema = z.object({
   id: z.uuid(),
   // fechaMaxSiembra: z.string().regex(DDMMYYYY_REGEX, 'La fecha debe estar en formato DD/MM/YYYY'),
   fechaMaxSiembra: z.iso.datetime(),
-  distanciaSiembra: z.number()
+  distanciaSiembra: z.number(),
+  cantidadHectareas: z.number(),
+  fertilizante: fertilizerSchema.nullable()
 })
 
 const datosSiembraSchema = baseSchemaDatosSiembraSchema.extend({
@@ -52,7 +66,7 @@ export const orderSiembraSchema = orderBaseSchema.extend({
   siembra: datosSiembraSchema
 })
 
-export const createOrderSiembraSchema = orderBaseSchema.extend({
+export const createOrderSiembraSchema = createOrderBaseSchema.extend({
   type: z.literal(EOrderType.Siembra),
   siembra: createDatosSiembraSchema
 })
@@ -61,7 +75,7 @@ export const createOrderSiembraSchema = orderBaseSchema.extend({
 // Order Fertilización
 const datosFertilizacionSchema = z.object({
   id: z.uuid(),
-  fertilizante: z.string(),
+  fertilizante: fertilizerSchema,
   dosisKgHa: z.number(),
   metodo: z.string()
 })
@@ -73,7 +87,7 @@ export const orderFertilizacionSchema = orderBaseSchema.extend({
   fertilizacion: datosFertilizacionSchema
 })
 
-export const createOrderFertilizacionSchema = orderBaseSchema.extend({
+export const createOrderFertilizacionSchema = createOrderBaseSchema.extend({
   type: z.literal(EOrderType.Fertilizacion),
   fertilizacion: createDatosFertilizacionSchema
 })
@@ -94,7 +108,7 @@ export const orderCosechaSchema = orderBaseSchema.extend({
   cosecha: datosCosechaSchema
 })
 
-export const createOrderCosechaSchema = orderBaseSchema.extend({
+export const createOrderCosechaSchema = createOrderBaseSchema.extend({
   type: z.literal(EOrderType.Cosecha),
   cosecha: createDatosCosechaSchema
 })
@@ -106,21 +120,18 @@ export const orderSchema = z.discriminatedUnion('type', [
   orderCosechaSchema
 ])
 
-const createOmits = {
-  id: true,
-  dateOfCreation: true,
-  codigo: true,
-  creator: true
-} as const
-
 export const createOrderSchema = z.discriminatedUnion('type', [
-  createOrderSiembraSchema.omit(createOmits),
-  createOrderFertilizacionSchema.omit(createOmits),
-  createOrderCosechaSchema.omit(createOmits)
+  createOrderSiembraSchema,
+  createOrderFertilizacionSchema,
+  createOrderCosechaSchema
 ])
 
 // Interferimos las interfaces
+
+// Ordenes
 export type IOrderBase = z.infer<typeof orderBaseSchema>
+export type ICreateOrderBase = z.infer<typeof createOrderBaseSchema>
+
 export type IOrder = z.infer<typeof orderSchema>
 export type ICreateOrder = z.infer<typeof createOrderSchema>
 
