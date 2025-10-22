@@ -47,15 +47,16 @@ const baseSchemaDatosSiembraSchema = z.object({
   // fechaMaxSiembra: z.string().regex(DDMMYYYY_REGEX, 'La fecha debe estar en formato DD/MM/YYYY'),
   fechaMaxSiembra: z.iso.datetime(),
   distanciaSiembra: z.number(),
-  cantidadHectareas: z.number(),
-  fertilizante: fertilizerSchema.nullable()
+  cantidadHectareas: z.number()
 })
 
 const datosSiembraSchema = baseSchemaDatosSiembraSchema.extend({
+  fertilizante: fertilizerSchema.nullable(),
   datosSemilla: datosSemillaSchema
 })
 
 const createDatosSiembraSchema = baseSchemaDatosSiembraSchema.omit({ id: true }).extend({
+  fertilizante: fertilizerSchema.omit({ name: true }).nullable(),
   datosSemilla: createDatosSemillaSchema
 })
 // #endregion
@@ -127,13 +128,19 @@ export const createOrderSchema = z.discriminatedUnion('type', [
 ])
 
 // Interferimos las interfaces
+export type MyOmit<T, K extends PropertyKey> =
+    { [P in keyof T as Exclude<P, K>]: T[P] }
 
 // Ordenes
+export type KeysOmitUpdateOrder = 'id' | 'dateOfCreation' | 'codigo' | 'creator'
+
 export type IOrderBase = z.infer<typeof orderBaseSchema>
 export type ICreateOrderBase = z.infer<typeof createOrderBaseSchema>
+export type IUpdateOrderBase = Omit<IOrderBase, KeysOmitUpdateOrder>
 
 export type IOrder = z.infer<typeof orderSchema>
 export type ICreateOrder = z.infer<typeof createOrderSchema>
+export type IUpdateOrder = MyOmit<IOrder, KeysOmitUpdateOrder>
 
 // Siembra
 export type IDatosSemilla = z.infer<typeof datosSemillaSchema>

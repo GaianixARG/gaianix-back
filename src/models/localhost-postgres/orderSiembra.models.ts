@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto'
 import pool from '../../config/db'
 import { TablasMap } from '../../schemas/mappings'
-import { IOrderSiembra, IOrderBase, ICreateDatosSiembra, ICreateOrderSiembra, orderSiembraSchema, IDatosSemilla, ICreateDatosSemilla, IDatosSiembra } from '../../schemas/order.schema'
+import { IOrderSiembra, IOrderBase, ICreateDatosSiembra, orderSiembraSchema, IDatosSemilla, ICreateDatosSemilla, IDatosSiembra } from '../../schemas/order.schema'
 import { BDService } from '../../services/bd.services'
 import { EOrderType, ETablas } from '../../types/enums'
 import { IOrderSiembraModel } from '../definitions/orderSiembra.models'
@@ -45,7 +45,16 @@ export class OrderSiembraModelLocalPostgres implements IOrderSiembraModel {
     }
   }
 
-  update = async (_id: string, _orderSiembra: ICreateOrderSiembra): Promise<void> => {}
+  update = async (datosSiembra: IDatosSiembra): Promise<void> => {
+    const { id, ...restOfSiembra } = datosSiembra
+
+    await this.updateDatosSemillaPorSiembra(restOfSiembra.datosSemilla)
+
+    const datosUpdate = BDService.queryUpdate<ICreateDatosSiembra>(ETablas.OrdenSiembra, restOfSiembra, true)
+    const result = await pool.query(datosUpdate.query, [...datosUpdate.values, id])
+    if (result == null || result.rowCount === 0) throw new Error('Error al actualizar la orden de siembra')
+  }
+
   remove = async (orderId: string): Promise<void> => {
     await this.removeOrderSiembra(orderId)
 
@@ -85,6 +94,16 @@ export class OrderSiembraModelLocalPostgres implements IOrderSiembraModel {
     if (result.rowCount == null || result.rowCount === 0) throw new Error('Error al insertar la Orden de Trabajo de Siembra')
 
     return newDatosSiembra
+  }
+  // #endregion
+
+  // #region Update
+  updateDatosSemillaPorSiembra = async (datos: IDatosSemilla): Promise<void> => {
+    const { id, ...restOfData } = datos
+
+    const datosUpdate = BDService.queryUpdate<ICreateDatosSemilla>(ETablas.SemillaPorSiembra, restOfData, true)
+    const result = await pool.query(datosUpdate.query, [...datosUpdate.values, id])
+    if (result == null || result.rowCount === 0) throw new Error('Error al actualizar la orden de siembra')
   }
   // #endregion
 

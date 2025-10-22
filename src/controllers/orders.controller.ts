@@ -85,13 +85,22 @@ export class OrderController {
 
     let exito = true
     try {
+      if (id !== bodyOrder.id) {
+        sendData(res, EHttpStatusCode.BAD_REQUEST, { exito: false, message: 'Orden invalida' })
+        return
+      }
+
       const lote = await this.models.loteModel.getById(bodyOrder.lote.id)
       if (lote == null) {
         sendData(res, EHttpStatusCode.BAD_REQUEST, { exito: false, message: 'Debe seleccionar un lote' })
         return
       }
 
-      await this.models.orderModel.update(id, bodyOrder, lote)
+      const { id: idOrder, codigo, dateOfCreation, creator, ...restOfOrder } = bodyOrder
+
+      restOfOrder.lote = lote
+
+      await this.models.orderModel.update(id, restOfOrder)
     } catch (error) {
       exito = false
     } finally {

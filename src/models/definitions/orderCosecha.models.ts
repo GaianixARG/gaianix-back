@@ -1,9 +1,9 @@
-import { ICreateDatosCosecha, ICreateOrderCosecha, IOrderBase, IOrderCosecha } from '../../schemas/order.schema'
+import { ICreateDatosCosecha, IDatosCosecha, IOrderBase, IOrderCosecha } from '../../schemas/order.schema'
 
 export interface IOrderCosechaModel {
   getAll: () => Promise<IOrderCosecha[]>
   getById: (id: string) => Promise<IOrderCosecha | undefined>
   create: (orderBase: IOrderBase, datosCosecha: ICreateDatosCosecha) => Promise<IOrderCosecha>
-  update: (id: string, orderCosecha: ICreateOrderCosecha) => Promise<void>
+  update: (datosCosecha: IDatosCosecha) => Promise<void>
   remove: (id: string) => Promise<void>
 }

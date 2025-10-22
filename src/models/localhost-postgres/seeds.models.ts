@@ -45,14 +45,10 @@ export class SeedModelLocalPostgres implements ISeedModel {
   }
 
   update = async (id: string, seed: ISeed): Promise<void> => {
-    const table = ETablas.Seed
-    const mapTable = TablasMap[table].map
-    if (mapTable.id == null) throw new Error('Error al actualizar la semilla')
+    const { id: idSeed, ...updateSeed } = seed
+    const datosUpdate = BDService.queryUpdate<ICreateSeed>(ETablas.Seed, updateSeed, true)
 
-    const { id: idFert, ...updateSeed } = seed
-    const datosUpdate = BDService.queryUpdate<ICreateSeed>(table, updateSeed)
-
-    const result = await pool.query(`${datosUpdate.query} WHERE ${mapTable.id} = $${datosUpdate.values.length + 1}`, [...datosUpdate.values, id])
+    const result = await pool.query(datosUpdate.query, [...datosUpdate.values, id])
     if (result == null || result.rowCount === 0) throw new Error('Error al actualizar la semilla')
   }
 

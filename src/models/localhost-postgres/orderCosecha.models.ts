@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto'
 import pool from '../../config/db'
-import { IOrderCosecha, IOrderBase, ICreateDatosCosecha, ICreateOrderCosecha, IDatosCosecha, orderCosechaSchema } from '../../schemas/order.schema'
+import { IOrderCosecha, IOrderBase, ICreateDatosCosecha, IDatosCosecha, orderCosechaSchema } from '../../schemas/order.schema'
 import { BDService } from '../../services/bd.services'
 import { EOrderType, ETablas } from '../../types/enums'
 import { IOrderCosechaModel } from '../definitions/orderCosecha.models'
@@ -45,7 +45,14 @@ export class OrderCosechaModelLocalPostgres implements IOrderCosechaModel {
     }
   }
 
-  update = async (_id: string, _orderCosecha: ICreateOrderCosecha): Promise<void> => {}
+  update = async (datosCosecha: IDatosCosecha): Promise<void> => {
+    const { id, ...restOfCosecha } = datosCosecha
+
+    const datosUpdate = BDService.queryUpdate<ICreateDatosCosecha>(ETablas.OrdenSiembra, restOfCosecha, true)
+    const result = await pool.query(datosUpdate.query, [...datosUpdate.values, id])
+    if (result == null || result.rowCount === 0) throw new Error('Error al actualizar la orden de cosecha')
+  }
+
   remove = async (orderId: string): Promise<void> => {
     const qOrderCosecha = BDService.queryRemoveByRel(ETablas.OrdenCosecha, ETablas.Order)
     await pool.query(qOrderCosecha, [orderId])

@@ -45,14 +45,10 @@ export class FertilizerModelLocalPostgres implements IFertilizerModel {
   }
 
   update = async (id: string, fertilizer: IFertilizer): Promise<void> => {
-    const table = ETablas.Fertilizante
-    const mapTable = TablasMap[table].map
-    if (mapTable.id == null) throw new Error('Error al actualizar el fertilizante')
-
     const { id: idFert, ...updateFertilizer } = fertilizer
-    const datosUpdate = BDService.queryUpdate<ICreateFertilizer>(table, updateFertilizer)
+    const datosUpdate = BDService.queryUpdate<ICreateFertilizer>(ETablas.Fertilizante, updateFertilizer, true)
 
-    const result = await pool.query(`${datosUpdate.query} WHERE ${mapTable.id} = $${datosUpdate.values.length + 1}`, [...datosUpdate.values, id])
+    const result = await pool.query(datosUpdate.query, [...datosUpdate.values, id])
     if (result == null || result.rowCount === 0) throw new Error('Error al actualizar el fertilizante')
   }
 

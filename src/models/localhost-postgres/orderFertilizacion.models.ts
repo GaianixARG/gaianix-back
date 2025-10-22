@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto'
 import pool from '../../config/db'
 import { TablasMap } from '../../schemas/mappings'
-import { IOrderFertilizacion, IOrderBase, ICreateDatosFertilizacion, ICreateOrderFertilizacion, orderFertilizacionSchema, IDatosFertilizacion } from '../../schemas/order.schema'
+import { IOrderFertilizacion, IOrderBase, ICreateDatosFertilizacion, orderFertilizacionSchema, IDatosFertilizacion } from '../../schemas/order.schema'
 import { BDService } from '../../services/bd.services'
 import { EOrderType, ETablas } from '../../types/enums'
 import { IOrderFertilizacionModel } from '../definitions/orderFertilizacion.models'
@@ -45,7 +45,14 @@ export class OrderFertilizacionModelLocalPostgres implements IOrderFertilizacion
     }
   }
 
-  update = async (_id: string, _orderFertilizacion: ICreateOrderFertilizacion): Promise<void> => {}
+  update = async (datosFertilizacion: IDatosFertilizacion): Promise<void> => {
+    const { id, ...restOfFert } = datosFertilizacion
+
+    const datosUpdate = BDService.queryUpdate<ICreateDatosFertilizacion>(ETablas.OrdenFertilizacion, restOfFert, true)
+    const result = await pool.query(datosUpdate.query, [...datosUpdate.values, id])
+    if (result == null || result.rowCount === 0) throw new Error('Error al actualizar la orden de fertilizacion')
+  }
+
   remove = async (orderId: string): Promise<void> => {
     const qOrderCosecha = BDService.queryRemoveByRel(ETablas.OrdenFertilizacion, ETablas.Order)
     await pool.query(qOrderCosecha, [orderId])

@@ -53,7 +53,7 @@ export class BDService {
     }
   }
 
-  static queryUpdate = <T extends {}> (tabla: ETablas, objectBody: T): InserQueryReturn => {
+  static queryUpdate = <T extends {}> (tabla: ETablas, objectBody: T, byId: boolean): InserQueryReturn => {
     const tableMap = TablasMap[tabla]
     const mapTable = tableMap.map
 
@@ -67,9 +67,12 @@ export class BDService {
       columns.push(`${col} = $${idx + 1}`)
     })
 
+    const whereById = mapTable.id != null && byId ? `WHERE ${mapTable.id} = $${objectKeys.length + 1}` : ''
+
     return {
       query: `UPDATE "${tabla}"
-      SET ${columns.join(',')}`,
+      SET ${columns.join(',')}
+      ${whereById}`,
       values: tableMap.values(objectKeys, objectBody)
     }
   }

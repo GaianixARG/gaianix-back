@@ -1,19 +1,31 @@
-import { IOrder, ICreateOrder, orderSchema, IOrderBase } from '../../schemas/order.schema'
+import { IOrder, ICreateOrder, orderSchema, IOrderBase, IUpdateOrder, IUpdateOrderBase } from '../../schemas/order.schema'
 import { IUserPrivate } from '../../schemas/user.schema'
 import pool from '../../config/db'
-import { IOrderModel, IOrderModels } from '../definitions/orders.models'
+import { IOrderModel } from '../definitions/orders.models'
 import { EOrderType, ETablas } from '../../types/enums'
 import { BDService } from '../../services/bd.services'
 import { TablasMap } from '../../schemas/mappings'
 import { ILote } from '../../schemas/lote.schema'
 import { randomUUID } from 'crypto'
 import { queryGetNewCode, querySelectOrdenByType } from '../../utils/order.utils'
+import { OrderSiembraModelLocalPostgres } from './orderSiembra.models'
+import { OrderCosechaModelLocalPostgres } from './orderCosecha.models'
+import { OrderFertilizacionModelLocalPostgres } from './orderFertilizacion.models'
 
+interface IOrderModels {
+  orderSiembraModel: OrderSiembraModelLocalPostgres
+  orderCosechaModel: OrderCosechaModelLocalPostgres
+  orderFertilizacionModel: OrderFertilizacionModelLocalPostgres
+}
 export class OrderModelLocalPostgres implements IOrderModel {
   models: IOrderModels
 
-  constructor (models: IOrderModels) {
-    this.models = models
+  constructor () {
+    this.models = {
+      orderSiembraModel: new OrderSiembraModelLocalPostgres(),
+      orderCosechaModel: new OrderCosechaModelLocalPostgres(),
+      orderFertilizacionModel: new OrderFertilizacionModelLocalPostgres()
+    }
   }
 
   getAll = async (): Promise<IOrder[]> => {
@@ -71,8 +83,28 @@ export class OrderModelLocalPostgres implements IOrderModel {
     return newOrder
   }
 
-  update = async (_id: string, _order: ICreateOrder, _lote: ILote): Promise<void> => {
+  update = async (id: string, order: IUpdateOrder): Promise<void> => {
+    let orderToUpdate: IUpdateOrderBase | undefined
+    if (order.type === EOrderType.Siembra) {
+      const { siembra, ...restOfSiembra } = order
+      orderToUpdate = restOfSiembra
+      await this.models.orderSiembraModel.update(siembra)
+    }
+    if (order.type === EOrderType.Cosecha) {
+      const { cosecha, ...restOfCosecha } = order
+      orderToUpdate = restOfCosecha
+      await this.models.orderCosechaModel.update(cosecha)
+    }
+    if (order.type === EOrderType.Fertilizacion) {
+      const { fertilizacion, ...restOfFert } = order
+      orderToUpdate = restOfFert
+      await this.models.orderFertilizacionModel.update(fertilizacion)
+    }
+    if (orderToUpdate == null) throw new Error('Error al actualizar la orden')
 
+    const datosUpdate = BDService.queryUpdate<IUpdateOrderBase>(ETablas.Order, orderToUpdate, true)
+    const result = await pool.query(datosUpdate.query, [...datosUpdate.values, id])
+    if (result == null || result.rowCount === 0) throw new Error('Error al actualizar el fertilizante')
   }
 
   remove = async (id: string): Promise<void> => {
@@ -97,9 +129,6 @@ export class OrderModelLocalPostgres implements IOrderModel {
 
     return null
   }
-  // #endregion
-
-  // #region UpdateOrder
   // #endregion
 
   // #region RemoveOrder
