@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node-dev --env-file .env src/index.ts",
+    "dev": "ts-node-dev --env-file .env.local src/index.ts",
+    "testing": "ts-node-dev --env-file .env.testing src/index.ts",
+    "prod": "ts-node-dev --env-file .env.prod src/index.ts",
     "lint": "ts-standard",
     "build": "tsc",
     "start": "node --env-file .env build/index.js",
