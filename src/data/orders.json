@@ -4,7 +4,14 @@
     "codigo": "S0001",
     "type": "Siembra",
     "title": "Siembra de maíz en lote norte",
-    "lote": "Lote Norte",
+    "lote": {
+      "id": "1",
+      "codigo": "Lote Norte",
+      "campo": {
+        "id": "1",
+        "nombre": "ASD"
+      }
+    },
     "dateOfCreation": "2025-08-19",
     "status": 1,
     "prioridad": 1,
@@ -29,7 +36,10 @@
       },
       "cantidadSemillasHa": 30000,
       "cantidadHectareas": 10,
-      "fertilizante": "Urea",
+      "fertilizante": {
+        "id": "1",
+        "name": "Urea"
+      },
       "distanciaSiembra": 70
     }
   },
@@ -38,7 +48,14 @@
     "codigo": "R0002",
     "type": "Fertilizacion",
     "title": "Riego lote sur",
-    "lote": "Lote Sur",
+    "lote": {
+      "id": "2",
+      "codigo": "Lote Sur",
+      "campo": {
+        "id": "1",
+        "nombre": "ASD"
+      }
+    },
     "dateOfCreation": "2025-08-15",
     "status": 1,
     "prioridad": 1,
@@ -64,7 +81,14 @@
     "codigo": "C0003",
     "type": "Cosecha",
     "title": "Cosecha de trigo en lote central",
-    "lote": "Lote Central",
+    "lote": {
+      "id": "3",
+      "codigo": "Lote Central",
+      "campo": {
+        "id": "1",
+        "nombre": "ASD"
+      }
+    },
     "dateOfCreation": "2025-08-10",
     "status": 1,
     "prioridad": 1,

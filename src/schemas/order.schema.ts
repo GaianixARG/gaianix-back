@@ -47,16 +47,15 @@ const baseSchemaDatosSiembraSchema = z.object({
   // fechaMaxSiembra: z.string().regex(DDMMYYYY_REGEX, 'La fecha debe estar en formato DD/MM/YYYY'),
   fechaMaxSiembra: z.iso.datetime(),
   distanciaSiembra: z.number(),
-  cantidadHectareas: z.number()
+  cantidadHectareas: z.number(),
+  fertilizante: fertilizerSchema.nullable()
 })
 
 const datosSiembraSchema = baseSchemaDatosSiembraSchema.extend({
-  fertilizante: fertilizerSchema.nullable(),
   datosSemilla: datosSemillaSchema
 })
 
 const createDatosSiembraSchema = baseSchemaDatosSiembraSchema.omit({ id: true }).extend({
-  fertilizante: fertilizerSchema.omit({ name: true }).nullable(),
   datosSemilla: createDatosSemillaSchema
 })
 // #endregion

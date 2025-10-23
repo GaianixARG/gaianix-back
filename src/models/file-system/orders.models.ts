@@ -1,4 +1,4 @@
-import { IOrder, ICreateOrder, IOrderBase } from '../../schemas/order.schema'
+import { IOrder, ICreateOrder, IOrderBase, IUpdateOrder } from '../../schemas/order.schema'
 import ordersData from '../../data/orders.json'
 import { IUserPrivate } from '../../schemas/user.schema'
 import { IOrderModel } from '../definitions/orders.models'
@@ -7,6 +7,20 @@ import { EOrderType } from '../../types/enums'
 const orders: IOrder[] = ordersData as IOrder[]
 
 export class OrderModelFileSystem implements IOrderModel {
+  update = async (id: string, order: IUpdateOrder): Promise<void> => {
+    const idx = orders.findIndex(x => x.id === id)
+    if (idx === -1) return
+    const antOrd = orders[idx]
+    orders[idx] = {
+      ...antOrd,
+      ...order
+    }
+  }
+
+  remove = async (id: string): Promise<void> => {
+    orders.filter(x => x.id !== id)
+  }
+
   getAll = async (): Promise<IOrder[]> => orders
   getById = async (id: string): Promise<IOrder | undefined> => orders.find(x => x.id === id)
   getByType = async (type: EOrderType): Promise<IOrder[]> => orders.filter(x => x.type === type)
@@ -22,7 +36,14 @@ export class OrderModelFileSystem implements IOrderModel {
       title: order.title,
       type: EOrderType.Siembra,
       status: order.status,
-      lote: order.lote,
+      lote: {
+        id: order.lote.id,
+        codigo: '',
+        campo: {
+          id: '1',
+          nombre: ''
+        }
+      },
       prioridad: order.prioridad
     }
     let newOrder: IOrder | undefined
@@ -40,7 +61,9 @@ export class OrderModelFileSystem implements IOrderModel {
           id: '10',
           fechaMaxSiembra: order.siembra.fechaMaxSiembra,
           distanciaSiembra: order.siembra.distanciaSiembra,
-          datosSemilla
+          datosSemilla,
+          cantidadHectareas: 0,
+          fertilizante: null
         }
       }
     }

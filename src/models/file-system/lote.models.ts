@@ -6,7 +6,7 @@ import { ETablas } from '../../types/enums'
 import { ILoteModel } from '../definitions/lote.models'
 
 export class LoteModelLocalPostgres implements ILoteModel {
-  getAll = async (): Promise<ILote[]> => {
+  getLotes = async (): Promise<ILote[]> => {
     const table = ETablas.Lote
     const mapTable = TablasMap[table].map
     if (mapTable.codigo == null) return []
