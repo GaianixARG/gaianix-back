@@ -5,6 +5,7 @@ import { EOrderType, ETablas } from '../types/enums'
 import { ICampo } from './campo.schema'
 import { ICreateFertilizer, IFertilizer } from './fertilizer.schema'
 import { ILote } from './lote.schema'
+import bcrypt from 'bcrypt'
 
 // #region UTILS
 export type Keys<T> = keyof T
@@ -127,6 +128,7 @@ export const DatosOrdenMap: Record<KeysOrden, string> = {
 // #endregion
 
 // #region TABLAS
+export type AllObjects = IUser | ISeed | IOrder | IDatosSemilla | IDatosSiembra | IDatosCosecha | IDatosFertilizacion | IFertilizer | ICampo | ILote
 export type AllKeys = KeysUser | KeysSeed | KeysOrden | KeysDatosSemilla | KeysDatosSiembra | KeysDatosCosecha | KeysDatosFertilizacion
 
 interface UsosTabla<T, K extends keyof T> {
@@ -134,7 +136,7 @@ interface UsosTabla<T, K extends keyof T> {
   alias: string
   map: PartialRecord<AllKeys, string>
   rels: PartialRecord<ETablas, string>
-  values: (objKeys: K[], datos: T) => any[]
+  values: (objKeys: K[], datos: T) => PartialRecord<K, any>
 }
 
 export const TablasMap: Record<ETablas, UsosTabla<any, any>> = {
@@ -146,11 +148,14 @@ export const TablasMap: Record<ETablas, UsosTabla<any, any>> = {
       [ETablas.Rol]: 'usu_role'
     },
     values: (objKeys: KeysUser[], datos: IUser) => {
-      return objKeys.map((k) => {
+      const obj: Partial<Record<KeysUser, any>> = {}
+      objKeys.forEach((k) => {
         switch (k) {
-          default: return datos[k]
+          case 'password': obj[k] = bcrypt.hashSync(datos.password, 10); break
+          default: obj[k] = datos[k]; break
         }
       })
+      return obj
     }
   },
   [ETablas.Seed]: {
@@ -159,11 +164,9 @@ export const TablasMap: Record<ETablas, UsosTabla<any, any>> = {
     map: SeedMap,
     rels: {},
     values: (objKeys: KeysSeed[], datos: ISeed) => {
-      return objKeys.map((k) => {
-        switch (k) {
-          default: return datos[k]
-        }
-      })
+      const obj: Partial<Record<KeysSeed, any>> = {}
+      objKeys.forEach((k) => { obj[k] = datos[k] })
+      return obj
     }
   },
   [ETablas.Order]: {
@@ -178,16 +181,20 @@ export const TablasMap: Record<ETablas, UsosTabla<any, any>> = {
       [ETablas.Lote]: 'odt_lote'
     },
     values: (objKeys: KeysOrden[], datos: IOrder) => {
-      return objKeys.map((k) => {
+      const obj: Partial<Record<KeysOrden, any>> = {}
+      objKeys.forEach((k) => {
+        let value: any
         switch (k) {
-          case 'creator': return datos.creator.id
-          case 'siembra': return datos.type === EOrderType.Siembra ? datos.siembra.id : null
-          case 'cosecha': return datos.type === EOrderType.Cosecha ? datos.cosecha.id : null
-          case 'fertilizacion': return datos.type === EOrderType.Fertilizacion ? datos.fertilizacion.id : null
-          case 'lote': return datos.lote.id
-          default: return datos[k]
+          case 'creator': value = datos.creator.id; break
+          case 'siembra': value = datos.type === EOrderType.Siembra ? datos.siembra.id : null; break
+          case 'cosecha': value = datos.type === EOrderType.Cosecha ? datos.cosecha.id : null; break
+          case 'fertilizacion': value = datos.type === EOrderType.Fertilizacion ? datos.fertilizacion.id : null; break
+          case 'lote': value = datos.lote.id; break
+          default: value = datos[k]; break
         }
+        obj[k] = value
       })
+      return obj
     }
   },
   [ETablas.OrdenSiembra]: {
@@ -199,13 +206,17 @@ export const TablasMap: Record<ETablas, UsosTabla<any, any>> = {
       [ETablas.Fertilizante]: 'ods_fertilizante'
     },
     values: (objKeys: KeysDatosSiembra[], datos: IDatosSiembra) => {
-      return objKeys.map((k) => {
+      const obj: Partial<Record<KeysDatosSiembra, any>> = {}
+      objKeys.forEach((k) => {
+        let value: any
         switch (k) {
-          case 'datosSemilla': return datos.datosSemilla.id
-          case 'fertilizante': return datos.fertilizante?.id
-          default: return datos[k]
+          case 'datosSemilla': value = datos.datosSemilla.id; break
+          case 'fertilizante': value = datos.fertilizante?.id; break
+          default: value = datos[k]; break
         }
+        obj[k] = value
       })
+      return obj
     }
   },
   [ETablas.OrdenCosecha]: {
@@ -214,11 +225,9 @@ export const TablasMap: Record<ETablas, UsosTabla<any, any>> = {
     map: DatosOrdenCosechaMap,
     rels: {},
     values: (objKeys: KeysDatosCosecha[], datos: IDatosCosecha) => {
-      return objKeys.map((k) => {
-        switch (k) {
-          default: return datos[k]
-        }
-      })
+      const obj: Partial<Record<KeysDatosCosecha, any>> = {}
+      objKeys.forEach((k) => { obj[k] = datos[k] })
+      return obj
     }
   },
   [ETablas.OrdenFertilizacion]: {
@@ -229,12 +238,16 @@ export const TablasMap: Record<ETablas, UsosTabla<any, any>> = {
       [ETablas.Fertilizante]: 'odf_fertilizante'
     },
     values: (objKeys: KeysDatosFertilizacion[], datos: IDatosFertilizacion) => {
-      return objKeys.map((k) => {
+      const obj: Partial<Record<KeysDatosFertilizacion, any>> = {}
+      objKeys.forEach((k) => {
+        let value: any
         switch (k) {
-          case 'fertilizante': return datos.fertilizante.id
-          default: return datos[k]
+          case 'fertilizante': value = datos.fertilizante.id; break
+          default: value = datos[k]; break
         }
+        obj[k] = value
       })
+      return obj
     }
   },
   [ETablas.SemillaPorSiembra]: {
@@ -245,12 +258,16 @@ export const TablasMap: Record<ETablas, UsosTabla<any, any>> = {
       [ETablas.Seed]: 'sxs_semilla'
     },
     values: (objKeys: KeysDatosSemilla[], datos: IDatosSemilla) => {
-      return objKeys.map((k) => {
+      const obj: Partial<Record<KeysDatosSemilla, any>> = {}
+      objKeys.forEach((k) => {
+        let value: any
         switch (k) {
-          case 'semilla': return datos.semilla.id
-          default: return datos[k]
+          case 'semilla': value = datos.semilla.id; break
+          default: value = datos[k]; break
         }
+        obj[k] = value
       })
+      return obj
     }
   },
   [ETablas.Rol]: {
@@ -259,11 +276,9 @@ export const TablasMap: Record<ETablas, UsosTabla<any, any>> = {
     map: RolMap,
     rels: {},
     values: (objKeys: KeysRol[], datos: IRol) => {
-      return objKeys.map((k) => {
-        switch (k) {
-          default: return datos[k]
-        }
-      })
+      const obj: Partial<Record<KeysRol, any>> = {}
+      objKeys.forEach((k) => { obj[k] = datos[k] })
+      return obj
     }
   },
   [ETablas.Campo]: {
@@ -272,11 +287,9 @@ export const TablasMap: Record<ETablas, UsosTabla<any, any>> = {
     map: CampoMap,
     rels: {},
     values: (objKeys: KeysCampo[], datos: ICampo) => {
-      return objKeys.map((k) => {
-        switch (k) {
-          default: return datos[k]
-        }
-      })
+      const obj: Partial<Record<KeysCampo, any>> = {}
+      objKeys.forEach((k) => { obj[k] = datos[k] })
+      return obj
     }
   },
   [ETablas.Lote]: {
@@ -287,12 +300,14 @@ export const TablasMap: Record<ETablas, UsosTabla<any, any>> = {
       [ETablas.Campo]: 'lot_campo'
     },
     values: (objKeys: KeysLote[], datos: ILote) => {
-      return objKeys.map((k) => {
+      const obj: Partial<Record<KeysLote, any>> = {}
+      objKeys.forEach((k) => {
         switch (k) {
-          case 'campo': return datos.campo.id
-          default: return datos[k]
+          case 'campo': obj[k] = datos.campo.id; break
+          default: obj[k] = datos[k]; break
         }
       })
+      return obj
     }
   },
   [ETablas.Fertilizante]: {
@@ -301,11 +316,9 @@ export const TablasMap: Record<ETablas, UsosTabla<any, any>> = {
     map: FertilizerMap,
     rels: {},
     values: (objKeys: KeysFertilizer[], datos: IFertilizer) => {
-      return objKeys.map((k) => {
-        switch (k) {
-          default: return datos[k]
-        }
-      })
+      const obj: Partial<Record<KeysFertilizer, any>> = {}
+      objKeys.forEach((k) => { obj[k] = datos[k] })
+      return obj
     }
   }
 }

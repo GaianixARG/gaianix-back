@@ -44,8 +44,8 @@ export class SeedModelLocalPostgres implements ISeedModel {
     return newSeed
   }
 
-  update = async (id: string, seed: ISeed): Promise<void> => {
-    const { id: idSeed, ...updateSeed } = seed
+  update = async (seed: ISeed): Promise<void> => {
+    const { id, ...updateSeed } = seed
     const datosUpdate = BDService.queryUpdate<ICreateSeed>(ETablas.Seed, updateSeed, true)
 
     const result = await pool.query(datosUpdate.query, [...datosUpdate.values, id])

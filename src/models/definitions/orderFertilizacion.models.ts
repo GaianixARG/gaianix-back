@@ -6,4 +6,5 @@ export interface IOrderFertilizacionModel {
   create: (orderBase: IOrderBase, datosFertilizacion: ICreateDatosFertilizacion) => Promise<IOrderFertilizacion>
   update: (datosFertilizacion: IDatosFertilizacion) => Promise<void>
   remove: (id: string) => Promise<void>
+  removeFertilizacion: (orderFert: IOrderFertilizacion) => Promise<void>
 }

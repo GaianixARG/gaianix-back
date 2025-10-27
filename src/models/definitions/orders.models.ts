@@ -8,6 +8,6 @@ export interface IOrderModel {
   getById: (id: string) => Promise<IOrder | undefined>
   getByType: (type: EOrderType) => Promise<IOrder[]>
   create: (order: ICreateOrder, creator: IUserPrivate, lote: ILote) => Promise<IOrder>
-  update: (id: string, order: IUpdateOrder) => Promise<void>
+  update: (order: IUpdateOrder) => Promise<void>
   remove: (id: string) => Promise<void>
 }

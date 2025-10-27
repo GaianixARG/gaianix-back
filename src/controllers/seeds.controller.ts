@@ -55,19 +55,20 @@ export class SeedController {
     const bodySeed = getValidatedBody<ICreateSeed>(req)
 
     let newSeed: ISeed | undefined
-    let exito = true
     try {
       newSeed = await this.models.seedModel.create(bodySeed)
-    } catch (err) {
-      exito = false
-      console.log(err)
-    } finally {
       sendData(res,
         EHttpStatusCode.OK_CREATED,
         {
-          exito,
+          exito: true,
           data: newSeed
         }
+      )
+    } catch (err) {
+      console.log(err)
+      sendData(res,
+        EHttpStatusCode.BAD_REQUEST,
+        { exito: false, message: 'Error al crear la semilla' }
       )
     }
   }
@@ -78,7 +79,9 @@ export class SeedController {
 
     let exito = true
     try {
-      await this.models.seedModel.update(seedId, bodySeed)
+      if (seedId !== bodySeed.id) throw new Error()
+
+      await this.models.seedModel.update(bodySeed)
     } catch (err) {
       console.log(err)
       exito = false

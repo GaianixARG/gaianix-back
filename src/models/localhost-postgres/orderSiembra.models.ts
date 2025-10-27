@@ -62,6 +62,8 @@ export class OrderSiembraModelLocalPostgres implements IOrderSiembraModel {
     await pool.query(query, [orderId])
   }
 
+  removeSiembra = async (_: IOrderSiembra): Promise<void> => {}
+
   // #region Utils
   // #region Create
   createDataSemillaPorSiembra = async (datos: ICreateDatosSemilla): Promise<IDatosSemilla> => {

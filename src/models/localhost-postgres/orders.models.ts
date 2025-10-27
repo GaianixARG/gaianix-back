@@ -62,7 +62,7 @@ export class OrderModelLocalPostgres implements IOrderModel {
 
   create = async (order: ICreateOrder, creator: IUserPrivate, lote: ILote): Promise<IOrder> => {
     const nuevoCodigoOrden = await this.getNewCodeOrder(order.type)
-    if (nuevoCodigoOrden == null) throw new Error('Error al crear la orden de trabajo')
+    if (nuevoCodigoOrden === '') throw new Error('Error al crear la orden de trabajo')
 
     const orderBase: IOrderBase = {
       ...order,
@@ -83,26 +83,29 @@ export class OrderModelLocalPostgres implements IOrderModel {
     return newOrder
   }
 
-  update = async (id: string, order: IUpdateOrder): Promise<void> => {
+  update = async (order: IUpdateOrder): Promise<void> => {
+    const { ...restOfOrder } = order
+
     let orderToUpdate: IUpdateOrderBase | undefined
-    if (order.type === EOrderType.Siembra) {
-      const { siembra, ...restOfSiembra } = order
+    if (restOfOrder.type === EOrderType.Siembra) {
+      const { siembra, ...restOfSiembra } = restOfOrder
       orderToUpdate = restOfSiembra
       await this.models.orderSiembraModel.update(siembra)
     }
-    if (order.type === EOrderType.Cosecha) {
-      const { cosecha, ...restOfCosecha } = order
+    if (restOfOrder.type === EOrderType.Cosecha) {
+      const { cosecha, ...restOfCosecha } = restOfOrder
       orderToUpdate = restOfCosecha
       await this.models.orderCosechaModel.update(cosecha)
     }
-    if (order.type === EOrderType.Fertilizacion) {
-      const { fertilizacion, ...restOfFert } = order
+    if (restOfOrder.type === EOrderType.Fertilizacion) {
+      const { fertilizacion, ...restOfFert } = restOfOrder
       orderToUpdate = restOfFert
       await this.models.orderFertilizacionModel.update(fertilizacion)
     }
     if (orderToUpdate == null) throw new Error('Error al actualizar la orden')
 
-    const datosUpdate = BDService.queryUpdate<IUpdateOrderBase>(ETablas.Order, orderToUpdate, true)
+    const { id, ...toUpdate } = orderToUpdate
+    const datosUpdate = BDService.queryUpdate<Omit<IUpdateOrderBase, 'id'>>(ETablas.Order, toUpdate, true)
     const result = await pool.query(datosUpdate.query, [...datosUpdate.values, id])
     if (result == null || result.rowCount === 0) throw new Error('Error al actualizar el fertilizante')
   }

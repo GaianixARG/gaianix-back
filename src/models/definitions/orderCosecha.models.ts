@@ -6,4 +6,5 @@ export interface IOrderCosechaModel {
   create: (orderBase: IOrderBase, datosCosecha: ICreateDatosCosecha) => Promise<IOrderCosecha>
   update: (datosCosecha: IDatosCosecha) => Promise<void>
   remove: (id: string) => Promise<void>
+  removeCosecha: (orderCosecha: IOrderCosecha) => Promise<void>
 }

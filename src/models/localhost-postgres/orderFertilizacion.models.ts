@@ -61,6 +61,8 @@ export class OrderFertilizacionModelLocalPostgres implements IOrderFertilizacion
     await pool.query(qOrder, [orderId])
   }
 
+  removeFertilizacion = async (_: IOrderFertilizacion): Promise<void> => {}
+
   // #region Utils
   createDataOrdenFertilizacion = async (datos: ICreateDatosFertilizacion): Promise<IDatosFertilizacion> => {
     const tabla = ETablas.OrdenFertilizacion

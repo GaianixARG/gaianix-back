@@ -6,4 +6,5 @@ export interface IOrderSiembraModel {
   create: (orderBase: IOrderBase, datosSiembra: ICreateDatosSiembra) => Promise<IOrderSiembra>
   update: (datosSiembra: IDatosSiembra) => Promise<void>
   remove: (id: string) => Promise<void>
+  removeSiembra: (orderSiembra: IOrderSiembra) => Promise<void>
 }

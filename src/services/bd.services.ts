@@ -1,5 +1,8 @@
+import { PostgrestError } from '@supabase/supabase-js'
+import supabase from '../config/supabase'
 import { AllKeys, TablasMap } from '../schemas/mappings'
 import { ETablas } from '../types/enums'
+import { aplanarObjeto, getTableRels } from '../utils/global.utils'
 
 type TipoJoin = 'INNER' | 'LEFT' | 'RIGHT'
 
@@ -45,11 +48,13 @@ export class BDService {
     const columns = objectKeys.map(x => mapTable[x]).join(',')
     const values: string = objectKeys.map((_, i) => `$${i + 1}`).join(',')
 
+    const valuesToInsert = tableMap.values(objectKeys, objectBody)
+
     return {
       query: `INSERT INTO "${tabla}"
       (${columns})
       VALUES (${values})`,
-      values: tableMap.values(objectKeys, objectBody)
+      values: Object.values(valuesToInsert)
     }
   }
 
@@ -69,15 +74,19 @@ export class BDService {
 
     const whereById = mapTable.id != null && byId ? `WHERE ${mapTable.id} = $${objectKeys.length + 1}` : ''
 
+    const valuesToUpdate = tableMap.values(objectKeys, objectBody)
+
     return {
       query: `UPDATE "${tabla}"
       SET ${columns.join(',')}
       ${whereById}`,
-      values: tableMap.values(objectKeys, objectBody)
+      values: Object.values(valuesToUpdate)
     }
   }
 
-  static getObjectFromTable = (table: ETablas, dataDt: any): any => {
+  static getObjectFromTable = (table: ETablas, dataDt: any, isSupabase: boolean = false): any => {
+    if (isSupabase) dataDt = aplanarObjeto(dataDt)
+
     const mapTable = TablasMap[table]
     const map = mapTable.map
     const colXTableRel: DictColXTable = {}
@@ -160,4 +169,37 @@ export class BDService {
 
     return rels
   }
+
+  // #region SUPABASE
+  static getValuesToSupabase = <T extends {}>(tabla: ETablas, objectBody: T): Record<string, any> => {
+    const tableMap = TablasMap[tabla]
+    const mapTable = tableMap.map
+
+    const objectKeys = Object.keys(objectBody).map(x => x as AllKeys)
+    const objectValues = tableMap.values(objectKeys, objectBody)
+
+    const value: Record<string, any> = {}
+    objectKeys.forEach((objKey) => {
+      const col = mapTable[objKey]
+      if (col == null) return
+      value[col] = objectValues[objKey]
+    })
+    return value
+  }
+
+  static querySelectSupabase = (tabla: ETablas): string => {
+    const queryJoin = getTableRels(tabla).map((t) => `${t} (*)`).join(',')
+
+    return `
+      *,
+      ${queryJoin}
+    `
+  }
+
+  static upsert = async <T extends {}>(table: ETablas, datos: T): Promise<PostgrestError | null> => {
+    const values = BDService.getValuesToSupabase<T>(table, datos)
+    const { error } = await supabase.from(table).upsert(values)
+    return error
+  }
+  // #endregion
 }

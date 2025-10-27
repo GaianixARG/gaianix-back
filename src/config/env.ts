@@ -14,5 +14,7 @@ export const config = {
   port: Number(getEnv('PORT', '3000')),
   nodeEnv: getEnv('NODE_ENV', 'development'),
   jwtSecret: getEnv('JWT_SECRET'),
-  databaseUrl: getEnv('DATABASE_URL')
+  databaseUrl: getEnv('DATABASE_URL'),
+  projectUrlSupabase: getEnv('PROJECT_URL_SUPABASE', ''),
+  apyKeySupabase: getEnv('APY_KEY_SUPABASE', '')
 }

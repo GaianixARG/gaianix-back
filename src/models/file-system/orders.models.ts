@@ -7,8 +7,8 @@ import { EOrderType } from '../../types/enums'
 const orders: IOrder[] = ordersData as IOrder[]
 
 export class OrderModelFileSystem implements IOrderModel {
-  update = async (id: string, order: IUpdateOrder): Promise<void> => {
-    const idx = orders.findIndex(x => x.id === id)
+  update = async (order: IUpdateOrder): Promise<void> => {
+    const idx = orders.findIndex(x => x.id === order.id)
     if (idx === -1) return
     const antOrd = orders[idx]
     orders[idx] = {
