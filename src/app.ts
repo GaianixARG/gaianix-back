@@ -33,7 +33,6 @@ export const createApp = ({ orderModel, userModel, seedModel, loteModel, fertili
   app.use(cookieParser())
 
   app.use('/', (_, res) => res.send('GAIANIX BACK, /api/docs to view SWAGGER'))
-
   app.use('/api/orders', createOrderRouter({ userModel, orderModel, loteModel }))
   app.use('/api/seeds', createSeedRouter({ seedModel }))
   app.use('/api/users', createUserRouter({ userModel }))
