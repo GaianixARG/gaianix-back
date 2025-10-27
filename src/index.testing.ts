@@ -5,10 +5,12 @@ import { OrderModelTestingSupabase } from './models/testing-supabase/orders.mode
 import { SeedModelTestingSupabase } from './models/testing-supabase/seeds.models'
 import { UserModelTestingSupabase } from './models/testing-supabase/users.models'
 
-createApp({
+const app = createApp({
   orderModel: new OrderModelTestingSupabase(),
   seedModel: new SeedModelTestingSupabase(),
   userModel: new UserModelTestingSupabase(),
   loteModel: new LoteModelTestingSupabase(),
   fertilizerModel: new FertilizerModelTestingSupabase()
 })
+
+module.exports = app
