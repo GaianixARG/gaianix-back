@@ -23,7 +23,7 @@ export interface AppModels {
   fertilizerModel: IFertilizerModel
 }
 
-export const createApp = ({ orderModel, userModel, seedModel, loteModel, fertilizerModel }: AppModels): express.Express => {
+export const createApp = ({ orderModel, userModel, seedModel, loteModel, fertilizerModel }: AppModels): void => {
   const app = express()
   app.use(cors({
     origin: '*',
@@ -31,6 +31,8 @@ export const createApp = ({ orderModel, userModel, seedModel, loteModel, fertili
   }))
   app.use(express.json())
   app.use(cookieParser())
+
+  app.use('/', (_, res) => res.send('GAIANIX BACK, /api/docs to view SWAGGER'))
 
   app.use('/api/orders', createOrderRouter({ userModel, orderModel, loteModel }))
   app.use('/api/seeds', createSeedRouter({ seedModel }))
@@ -46,6 +48,4 @@ export const createApp = ({ orderModel, userModel, seedModel, loteModel, fertili
     console.log(`🚀 Gaianix backend running on http://localhost:${port}`)
     console.log(`📑 Swagger docs: http://localhost:${config.port}/api/docs`)
   })
-
-  return app
 }
