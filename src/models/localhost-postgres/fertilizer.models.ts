@@ -44,8 +44,8 @@ export class FertilizerModelLocalPostgres implements IFertilizerModel {
     return newFertilizer
   }
 
-  update = async (id: string, fertilizer: IFertilizer): Promise<void> => {
-    const { id: idFert, ...updateFertilizer } = fertilizer
+  update = async (fertilizer: IFertilizer): Promise<void> => {
+    const { id, ...updateFertilizer } = fertilizer
     const datosUpdate = BDService.queryUpdate<ICreateFertilizer>(ETablas.Fertilizante, updateFertilizer, true)
 
     const result = await pool.query(datosUpdate.query, [...datosUpdate.values, id])

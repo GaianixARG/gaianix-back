@@ -74,7 +74,8 @@ export class OrderController {
 
       const newOrder = await this.models.orderModel.create(bodyOrder, user, lote)
       sendData(res, EHttpStatusCode.OK_CREATED, { exito: true, data: newOrder })
-    } catch {
+    } catch (err) {
+      console.log(err)
       sendData(res, EHttpStatusCode.BAD_REQUEST, { exito: false, message: 'Error al crear la orden' })
     }
   }
@@ -96,11 +97,10 @@ export class OrderController {
         return
       }
 
-      const { id: idOrder, codigo, dateOfCreation, creator, ...restOfOrder } = bodyOrder
+      const { codigo, dateOfCreation, creator, ...restOfOrder } = bodyOrder
 
       restOfOrder.lote = lote
-
-      await this.models.orderModel.update(id, restOfOrder)
+      await this.models.orderModel.update(restOfOrder)
     } catch (error) {
       exito = false
     } finally {
@@ -119,10 +119,11 @@ export class OrderController {
       await this.models.orderModel.remove(id)
     } catch (error) {
       exito = false
+      console.log(error)
     } finally {
       sendData(res,
         exito ? EHttpStatusCode.OK_NO_CONTENT : EHttpStatusCode.BAD_REQUEST,
-        exito ? undefined : { exito, message: 'Error al editar la orden' }
+        exito ? undefined : { exito, message: 'Error al eliminar la orden' }
       )
     }
   }

@@ -39,3 +39,51 @@ export const queryGetNewCode = (type: EOrderType): string => `WITH ultimo AS (
       LPAD((COALESCE(ultimo.max_num, 0) + 1)::text, 5, '0')
     ) AS codigo
   FROM ultimo;`
+
+// #region SUPABASE
+export const querySelectOdtBaseSupbase = (): string => {
+  return `
+    *,
+    ${ETablas.User}!inner (
+      *,
+      ${ETablas.Rol}!inner (*)
+    ),
+    ${ETablas.Lote}!inner (
+      *,
+      ${ETablas.Campo}!inner (*)
+    )
+  `
+}
+
+export const querySelectOrdenByTypeSupabase = (type?: EOrderType): string => {
+  let baseQuery = querySelectOdtBaseSupbase()
+
+  if (type == null || type === EOrderType.Siembra) {
+    baseQuery += `,
+      ${ETablas.OrdenSiembra}!left (
+        *,
+        ${ETablas.SemillaPorSiembra}!left (
+          *,
+          ${ETablas.Seed}!left (*)
+        ),
+        ${ETablas.Fertilizante}!left (*)
+      )
+    `
+  }
+  if (type == null || type === EOrderType.Fertilizacion) {
+    baseQuery += `,
+      ${ETablas.OrdenFertilizacion}!left (
+        *,
+        ${ETablas.Fertilizante}!left (*)
+      )
+    `
+  }
+
+  if (type == null || type === EOrderType.Cosecha) {
+    baseQuery += `, ${ETablas.OrdenCosecha}!left (*)
+    `
+  }
+
+  return baseQuery
+}
+// #endregion

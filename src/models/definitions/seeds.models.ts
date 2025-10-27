@@ -4,6 +4,6 @@ export interface ISeedModel {
   getAll: () => Promise<ISeed[]>
   getById: (id: string) => Promise<ISeed | undefined>
   create: (seed: ICreateSeed) => Promise<ISeed>
-  update: (id: string, seed: ISeed) => Promise<void>
+  update: (seed: ISeed) => Promise<void>
   remove: (id: string) => Promise<void>
 }

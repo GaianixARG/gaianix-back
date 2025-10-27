@@ -19,7 +19,7 @@ const datosOrderBaseSchema = z.object({
   title: z.string(),
   type: z.enum(EOrderType),
   status: z.enum(EStatus),
-  dateOfCreation: z.iso.datetime(),
+  dateOfCreation: z.iso.datetime({ offset: true }),
   creator: userPrivateSchema,
   prioridad: z.enum(EPrioridad)
 })
@@ -45,7 +45,7 @@ const createDatosSemillaSchema = datosSemillaSchema.omit({ id: true })
 const baseSchemaDatosSiembraSchema = z.object({
   id: z.uuid(),
   // fechaMaxSiembra: z.string().regex(DDMMYYYY_REGEX, 'La fecha debe estar en formato DD/MM/YYYY'),
-  fechaMaxSiembra: z.iso.datetime(),
+  fechaMaxSiembra: z.iso.datetime({ offset: true }),
   distanciaSiembra: z.number(),
   cantidadHectareas: z.number(),
   fertilizante: fertilizerSchema.nullable()
@@ -95,7 +95,7 @@ export const createOrderFertilizacionSchema = createOrderBaseSchema.extend({
 // Order Cosecha
 const datosCosechaSchema = z.object({
   id: z.uuid(),
-  fechaCosecha: z.iso.date(),
+  fechaCosecha: z.iso.datetime({ offset: true }),
   rendimientoEstimado: z.number(),
   maquinaria: z.string(),
   humedad: z.number()
@@ -131,7 +131,7 @@ export type MyOmit<T, K extends PropertyKey> =
     { [P in keyof T as Exclude<P, K>]: T[P] }
 
 // Ordenes
-export type KeysOmitUpdateOrder = 'id' | 'dateOfCreation' | 'codigo' | 'creator'
+export type KeysOmitUpdateOrder = 'dateOfCreation' | 'codigo' | 'creator'
 
 export type IOrderBase = z.infer<typeof orderBaseSchema>
 export type ICreateOrderBase = z.infer<typeof createOrderBaseSchema>

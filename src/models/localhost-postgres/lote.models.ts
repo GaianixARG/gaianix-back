@@ -1,5 +1,6 @@
+import { randomUUID } from 'crypto'
 import pool from '../../config/db'
-import { ILote, loteSchema } from '../../schemas/lote.schema'
+import { ICreateLote, ILote, loteSchema } from '../../schemas/lote.schema'
 import { TablasMap } from '../../schemas/mappings'
 import { BDService } from '../../services/bd.services'
 import { ETablas } from '../../types/enums'
@@ -28,5 +29,18 @@ export class LoteModelLocalPostgres implements ILoteModel {
 
     const loteDt = BDService.getObjectFromTable(table, result.rows[0])
     return loteSchema.parse(loteDt)
+  }
+
+  create = async (seed: ICreateLote): Promise<ILote> => {
+    const newLote: ILote = {
+      ...seed,
+      id: randomUUID()
+    }
+
+    const datosInsert = BDService.queryInsert<ILote>(ETablas.Lote, newLote)
+    const result = await pool.query(`${datosInsert.query}`, datosInsert.values)
+    if (result == null || result.rowCount === 0) throw new Error('Error al crear la semilla')
+
+    return newLote
   }
 }

@@ -61,6 +61,9 @@ export class OrderCosechaModelLocalPostgres implements IOrderCosechaModel {
     await pool.query(qOrder, [orderId])
   }
 
+  removeCosecha = async (_: IOrderCosecha): Promise<void> => {}
+
+  // #region Utils
   createDataOrdenCosecha = async (datos: ICreateDatosCosecha): Promise<IDatosCosecha> => {
     const tabla = ETablas.OrdenCosecha
 
@@ -76,4 +79,5 @@ export class OrderCosechaModelLocalPostgres implements IOrderCosechaModel {
 
     return newDatosCosecha
   }
+  // #endregion
 }

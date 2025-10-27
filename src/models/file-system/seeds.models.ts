@@ -9,8 +9,8 @@ export class SeedModelFileSystem implements ISeedModel {
     return seeds.find(x => x.id === id)
   }
 
-  update = async (id: string, seed: ISeed): Promise<void> => {
-    const idx = seeds.findIndex(x => x.id === id)
+  update = async (seed: ISeed): Promise<void> => {
+    const idx = seeds.findIndex(x => x.id === seed.id)
     if (idx === -1) return
     seeds[idx] = seed
   }

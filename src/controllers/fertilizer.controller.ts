@@ -54,20 +54,17 @@ export class FertilizerController {
   createFertilizer = async (req: Request, res: Response): Promise<void> => {
     const bodyFertilizer = getValidatedBody<ICreateFertilizer>(req)
 
-    let newFertilizer: IFertilizer | undefined
-    let exito = true
     try {
-      newFertilizer = await this.models.fertilizerModel.create(bodyFertilizer)
-    } catch (err) {
-      exito = false
-      console.log(err)
-    } finally {
+      const newFertilizer = await this.models.fertilizerModel.create(bodyFertilizer)
       sendData(res,
         EHttpStatusCode.OK_CREATED,
-        {
-          exito,
-          data: newFertilizer
-        }
+        { exito: true, data: newFertilizer }
+      )
+    } catch (err) {
+      console.log(err)
+      sendData(res,
+        EHttpStatusCode.BAD_REQUEST,
+        { exito: false, message: 'Error al crear el fertilizante' }
       )
     }
   }
@@ -78,7 +75,12 @@ export class FertilizerController {
 
     let exito = true
     try {
-      await this.models.fertilizerModel.update(fertilizerId, bodyFertilizer)
+      if (fertilizerId !== bodyFertilizer.id) {
+        sendData(res, EHttpStatusCode.BAD_REQUEST, { exito: false, message: 'Orden invalida' })
+        return
+      }
+
+      await this.models.fertilizerModel.update(bodyFertilizer)
     } catch (err) {
       console.log(err)
       exito = false

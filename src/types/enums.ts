@@ -59,6 +59,7 @@ export enum ECookie {
 
 export enum ETablas {
   User = 'Usuario',
+  // UserSupabase = 'auth.users',
   Rol = 'Rol',
   Seed = 'Semilla',
   Order = 'OrdenDeTrabajo',
