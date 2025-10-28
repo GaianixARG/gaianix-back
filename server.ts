@@ -13,4 +13,4 @@ if (config.nodeEnv !== 'production') {
   app = appTesting
 }
 
-export default app
+module.exports = app
