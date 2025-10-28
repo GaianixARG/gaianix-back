@@ -5,7 +5,7 @@ import { OrderModelTestingSupabase } from './models/testing-supabase/orders.mode
 import { SeedModelTestingSupabase } from './models/testing-supabase/seeds.models'
 import { UserModelTestingSupabase } from './models/testing-supabase/users.models'
 
-createApp({
+export const appTesting = createApp({
   orderModel: new OrderModelTestingSupabase(),
   seedModel: new SeedModelTestingSupabase(),
   userModel: new UserModelTestingSupabase(),
