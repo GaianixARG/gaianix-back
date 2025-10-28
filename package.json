@@ -1,7 +1,7 @@
 {
   "name": "gaianix-back",
   "version": "1.0.0",
-  "main": "src/server.ts",
+  "main": "server.ts",
   "type": "module",
   "scripts": {
     "dev": "ts-node-dev --env-file .env.local src/index.local.ts",
@@ -9,7 +9,7 @@
     "prod": "ts-node-dev --env-file .env.prod src/index.ts",
     "lint": "ts-standard",
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "node server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
