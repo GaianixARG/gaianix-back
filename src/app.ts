@@ -1,6 +1,4 @@
 import express from 'express'
-import { config } from './config/env'
-
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import { createOrderRouter } from './routes/orders.routes'
@@ -23,7 +21,7 @@ export interface AppModels {
   fertilizerModel: IFertilizerModel
 }
 
-export const createApp = ({ orderModel, userModel, seedModel, loteModel, fertilizerModel }: AppModels): void => {
+export const createApp = ({ orderModel, userModel, seedModel, loteModel, fertilizerModel }: AppModels): express.Express => {
   const app = express()
   app.use(cors({
     origin: '*',
@@ -39,12 +37,7 @@ export const createApp = ({ orderModel, userModel, seedModel, loteModel, fertili
   app.use('/api/lotes', createLotesRouter({ loteModel }))
   app.use('/api/fertilizers', createFertilizerRouter({ fertilizerModel }))
 
-  const port = config.port
-
   setupSwagger(app)
 
-  app.listen(port, () => {
-    console.log(`🚀 Gaianix backend running on http://localhost:${port}`)
-    console.log(`📑 Swagger docs: http://localhost:${config.port}/api/docs`)
-  })
+  return app
 }
