@@ -1,6 +1,6 @@
-import { config } from './config/env'
-import { appLocal } from './index.local.'
-import { appTesting } from './index.testing'
+import { config } from './src/config/env'
+import { appLocal } from './src/index.local.'
+import { appTesting } from './src/index.testing'
 
 let app = appLocal
 if (config.nodeEnv !== 'production') {
