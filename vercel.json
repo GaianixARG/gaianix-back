@@ -5,5 +5,17 @@
       "source": "/(.*)",
       "destination": "src"
     }
+  ],
+  "builds": [
+    {
+      "src": "dist/index.testing.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "dist/index.testing.js"
+    }
   ]
 }
