@@ -4,3 +4,4 @@ build
 .env.*
 .github
 dist
+.vercel
