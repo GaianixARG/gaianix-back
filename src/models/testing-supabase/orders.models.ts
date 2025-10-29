@@ -9,8 +9,9 @@ import { randomUUID } from 'crypto'
 import { OrderCosechaModelTestingSupabase } from './orderCosecha.models'
 import { OrderFertilizacionModelTestingSupabase } from './orderFertilizacion.models'
 import { OrderSiembraModelTestingSupabase } from './orderSiembra.models'
-import supabase from '../../config/supabase'
 import { querySelectOrdenByTypeSupabase } from '../../utils/order.utils'
+import { SupabaseClient } from '@supabase/supabase-js'
+import { upsert } from '../../utils/supabase.utils'
 
 interface IOrderModels {
   orderSiembraModel: OrderSiembraModelTestingSupabase
@@ -18,15 +19,17 @@ interface IOrderModels {
   orderFertilizacionModel: OrderFertilizacionModelTestingSupabase
 }
 export class OrderModelTestingSupabase implements IOrderModel {
+  supabase: SupabaseClient
   models: IOrderModels
   Table: ETablas = ETablas.Order
   MapTable = TablasMap[this.Table]
 
-  constructor () {
+  constructor (supabase: SupabaseClient) {
+    this.supabase = supabase
     this.models = {
-      orderSiembraModel: new OrderSiembraModelTestingSupabase(),
-      orderCosechaModel: new OrderCosechaModelTestingSupabase(),
-      orderFertilizacionModel: new OrderFertilizacionModelTestingSupabase()
+      orderSiembraModel: new OrderSiembraModelTestingSupabase(supabase),
+      orderCosechaModel: new OrderCosechaModelTestingSupabase(supabase),
+      orderFertilizacionModel: new OrderFertilizacionModelTestingSupabase(supabase)
     }
   }
 
@@ -35,7 +38,7 @@ export class OrderModelTestingSupabase implements IOrderModel {
     if (mapTable.dateOfCreation == null || mapTable.type == null) return []
 
     const query = querySelectOrdenByTypeSupabase()
-    const { data } = await supabase.from(this.Table).select(query).order(mapTable.dateOfCreation)
+    const { data } = await this.supabase.from(this.Table).select(query).order(mapTable.dateOfCreation)
     if (data == null) return []
 
     return data.map((row) => {
@@ -82,7 +85,7 @@ export class OrderModelTestingSupabase implements IOrderModel {
     const newOrder = await this.createOrderByType(orderBase, order)
     if (newOrder == null) throw new Error('Error al crear la orden de trabajo')
 
-    const error = await BDService.upsert<IOrder>(this.Table, newOrder)
+    const error = await upsert<IOrder>(this.supabase, this.Table, newOrder)
     if (error != null) throw new Error('Error al crear la orden de trabajo')
 
     return newOrder
@@ -107,7 +110,7 @@ export class OrderModelTestingSupabase implements IOrderModel {
     }
     if (orderToUpdate == null) throw new Error('Error al actualizar la orden')
 
-    const error = await BDService.upsert<IUpdateOrderBase>(this.Table, orderToUpdate)
+    const error = await upsert<IUpdateOrderBase>(this.supabase, this.Table, orderToUpdate)
     if (error != null) throw new Error('Error al crear la orden de trabajo')
   }
 
@@ -120,13 +123,13 @@ export class OrderModelTestingSupabase implements IOrderModel {
     const mapTable = this.MapTable.map
     if (mapTable.id == null) return
 
-    await supabase.from(this.Table).delete().eq(mapTable.id, id)
+    await this.supabase.from(this.Table).delete().eq(mapTable.id, id)
   }
 
   // #region Utils
   // #region CreateOrder
   getNewCodeOrder = async (type: EOrderType): Promise<string> => {
-    const { data } = await supabase.rpc('get_new_code_order', { type })
+    const { data } = await this.supabase.rpc('get_new_code_order', { type })
     if (data == null || data.length === 0) throw new Error('Error al definir el codigo')
     return data[0] ?? ''
   }

@@ -4,12 +4,18 @@ import { BDService } from '../../services/bd.services'
 import { EOrderType, ETablas } from '../../types/enums'
 import { IOrderCosechaModel } from '../definitions/orderCosecha.models'
 import { TablasMap } from '../../schemas/mappings'
-import supabase from '../../config/supabase'
 import { querySelectOrdenByTypeSupabase } from '../../utils/order.utils'
+import { SupabaseClient } from '@supabase/supabase-js'
+import { upsert } from '../../utils/supabase.utils'
 
 export class OrderCosechaModelTestingSupabase implements IOrderCosechaModel {
   Table = ETablas.OrdenCosecha
   MapTable = TablasMap[this.Table].map
+
+  supabase: SupabaseClient
+  constructor (supabase: SupabaseClient) {
+    this.supabase = supabase
+  }
 
   getAll = async (): Promise<IOrderCosecha[]> => {
     const tableOrder = ETablas.Order
@@ -17,7 +23,7 @@ export class OrderCosechaModelTestingSupabase implements IOrderCosechaModel {
     if (mapTableOrder.dateOfCreation == null || mapTableOrder.type == null) return []
 
     const query = querySelectOrdenByTypeSupabase(EOrderType.Cosecha)
-    const { data } = await supabase.from(tableOrder).select(query).eq(mapTableOrder.type, EOrderType.Cosecha).order(mapTableOrder.dateOfCreation)
+    const { data } = await this.supabase.from(tableOrder).select(query).eq(mapTableOrder.type, EOrderType.Cosecha).order(mapTableOrder.dateOfCreation)
     if (data == null) return []
 
     return data.map((row) => {
@@ -34,7 +40,7 @@ export class OrderCosechaModelTestingSupabase implements IOrderCosechaModel {
 
     const query = querySelectOrdenByTypeSupabase(EOrderType.Cosecha)
 
-    const { data } = await supabase.from(tableOrder).select(query).eq(mapTableOrder.id, id).single()
+    const { data } = await this.supabase.from(tableOrder).select(query).eq(mapTableOrder.id, id).single()
     if (data == null) return undefined
 
     const orderDt = BDService.getObjectFromTable(tableOrder, data, true)
@@ -50,7 +56,7 @@ export class OrderCosechaModelTestingSupabase implements IOrderCosechaModel {
   }
 
   update = async (datosCosecha: IDatosCosecha): Promise<void> => {
-    const error = await BDService.upsert<IDatosCosecha>(this.Table, datosCosecha)
+    const error = await upsert<IDatosCosecha>(this.supabase, this.Table, datosCosecha)
     if (error != null) throw new Error('Error al actualizar la orden de cosecha')
   }
 
@@ -60,7 +66,7 @@ export class OrderCosechaModelTestingSupabase implements IOrderCosechaModel {
     const mapTable = this.MapTable
     if (mapTable.id == null) return
 
-    await supabase.from(this.Table).delete().eq(mapTable.id, orderCosecha.cosecha.id)
+    await this.supabase.from(this.Table).delete().eq(mapTable.id, orderCosecha.cosecha.id)
   }
 
   createDataOrdenCosecha = async (datos: ICreateDatosCosecha): Promise<IDatosCosecha> => {
@@ -69,7 +75,7 @@ export class OrderCosechaModelTestingSupabase implements IOrderCosechaModel {
       id: randomUUID()
     }
 
-    const error = await BDService.upsert<IDatosCosecha>(this.Table, newDatosCosecha)
+    const error = await upsert<IDatosCosecha>(this.supabase, this.Table, newDatosCosecha)
     if (error != null) throw new Error('Error al insertar los datos de la cosecha')
 
     return newDatosCosecha

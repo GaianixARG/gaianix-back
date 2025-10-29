@@ -12,6 +12,7 @@ import { ISeedModel } from './models/definitions/seeds.models'
 import { ILoteModel } from './models/definitions/lote.models'
 import { IFertilizerModel } from './models/definitions/fertilizer.models'
 import { createFertilizerRouter } from './routes/fertilizer.routes'
+import { config } from './config/env'
 
 export interface AppModels {
   orderModel: IOrderModel
@@ -30,7 +31,7 @@ export const createApp = ({ orderModel, userModel, seedModel, loteModel, fertili
   app.use(express.json())
   app.use(cookieParser())
 
-  app.use('/', (_, res) => res.send('GAIANIX BACK, /api/docs to view SWAGGER'))
+  app.get('/', (_, res) => res.send('GAIANIX BACK, /api/docs to view SWAGGER'))
   app.use('/api/orders', createOrderRouter({ userModel, orderModel, loteModel }))
   app.use('/api/seeds', createSeedRouter({ seedModel }))
   app.use('/api/users', createUserRouter({ userModel }))
@@ -39,5 +40,12 @@ export const createApp = ({ orderModel, userModel, seedModel, loteModel, fertili
 
   setupSwagger(app)
 
+  if (config.nodeEnv !== 'production') {
+    const port = config.port
+    app.listen(port, () => {
+      console.log(`🚀 Gaianix backend running on http://localhost:${port}`)
+      console.log(`📑 Swagger docs: http://localhost:${port}/api/docs`)
+    })
+  }
   return app
 }

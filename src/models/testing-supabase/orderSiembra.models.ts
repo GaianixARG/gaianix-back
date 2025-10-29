@@ -4,12 +4,18 @@ import { IOrderSiembra, IOrderBase, ICreateDatosSiembra, orderSiembraSchema, IDa
 import { BDService } from '../../services/bd.services'
 import { EOrderType, ETablas } from '../../types/enums'
 import { IOrderSiembraModel } from '../definitions/orderSiembra.models'
-import supabase from '../../config/supabase'
 import { querySelectOrdenByTypeSupabase } from '../../utils/order.utils'
+import { SupabaseClient } from '@supabase/supabase-js'
+import { upsert } from '../../utils/supabase.utils'
 
 export class OrderSiembraModelTestingSupabase implements IOrderSiembraModel {
   Table = ETablas.OrdenSiembra
   MapTable = TablasMap[this.Table].map
+
+  supabase: SupabaseClient
+  constructor (supabase: SupabaseClient) {
+    this.supabase = supabase
+  }
 
   getAll = async (): Promise<IOrderSiembra[]> => {
     const tableOrder = ETablas.Order
@@ -17,7 +23,7 @@ export class OrderSiembraModelTestingSupabase implements IOrderSiembraModel {
     if (mapTableOrder.dateOfCreation == null || mapTableOrder.type == null) return []
 
     const query = querySelectOrdenByTypeSupabase(EOrderType.Siembra)
-    const { data } = await supabase.from(tableOrder).select(query).eq(mapTableOrder.type, EOrderType.Siembra).order(mapTableOrder.dateOfCreation)
+    const { data } = await this.supabase.from(tableOrder).select(query).eq(mapTableOrder.type, EOrderType.Siembra).order(mapTableOrder.dateOfCreation)
     if (data == null) return []
 
     return data.map((row) => {
@@ -32,7 +38,7 @@ export class OrderSiembraModelTestingSupabase implements IOrderSiembraModel {
     if (mapTableOrder.id == null) return undefined
 
     const query = querySelectOrdenByTypeSupabase(EOrderType.Siembra)
-    const { data } = await supabase.from(tableOrder).select(query).eq(mapTableOrder.id, id).single()
+    const { data } = await this.supabase.from(tableOrder).select(query).eq(mapTableOrder.id, id).single()
     if (data == null) return undefined
 
     const orderDt = BDService.getObjectFromTable(tableOrder, data, true)
@@ -50,7 +56,7 @@ export class OrderSiembraModelTestingSupabase implements IOrderSiembraModel {
   update = async (datosSiembra: IDatosSiembra): Promise<void> => {
     await this.updateDatosSemillaPorSiembra(datosSiembra.datosSemilla)
 
-    const error = await BDService.upsert<IDatosSiembra>(this.Table, datosSiembra)
+    const error = await upsert<IDatosSiembra>(this.supabase, this.Table, datosSiembra)
     if (error != null) throw new Error('Error al crear la orden de trabajo')
   }
 
@@ -62,7 +68,7 @@ export class OrderSiembraModelTestingSupabase implements IOrderSiembraModel {
     const mapTable = this.MapTable
     if (mapTable.id == null) return
 
-    await supabase.from(this.Table).delete().eq(mapTable.id, orderSiembra.siembra.id)
+    await this.supabase.from(this.Table).delete().eq(mapTable.id, orderSiembra.siembra.id)
   }
 
   // #region Utils
@@ -74,7 +80,7 @@ export class OrderSiembraModelTestingSupabase implements IOrderSiembraModel {
       id: randomUUID()
     }
 
-    const error = await BDService.upsert<IDatosSemilla>(tabla, newDatosSemilla)
+    const error = await upsert<IDatosSemilla>(this.supabase, tabla, newDatosSemilla)
     if (error != null) throw new Error('Error al insertar los datos de la siembra')
 
     return newDatosSemilla
@@ -89,7 +95,7 @@ export class OrderSiembraModelTestingSupabase implements IOrderSiembraModel {
       datosSemilla: semillaXSiembra,
       id: randomUUID()
     }
-    const error = await BDService.upsert<IDatosSiembra>(this.Table, newDatosSiembra)
+    const error = await upsert<IDatosSiembra>(this.supabase, this.Table, newDatosSiembra)
     if (error != null) throw new Error('Error al insertar la Orden de Trabajo de Siembra')
 
     return newDatosSiembra
@@ -98,7 +104,7 @@ export class OrderSiembraModelTestingSupabase implements IOrderSiembraModel {
 
   // #region Update
   updateDatosSemillaPorSiembra = async (datos: IDatosSemilla): Promise<void> => {
-    const error = await BDService.upsert<IDatosSemilla>(ETablas.SemillaPorSiembra, datos)
+    const error = await upsert<IDatosSemilla>(this.supabase, ETablas.SemillaPorSiembra, datos)
     if (error != null) throw new Error('Error al actualizar la orden de siembra')
   }
   // #endregion
@@ -109,7 +115,7 @@ export class OrderSiembraModelTestingSupabase implements IOrderSiembraModel {
     const mapTable = TablasMap[tabla].map
     if (mapTable.id == null) return
 
-    await supabase.from(tabla).delete().eq(mapTable.id, idDatosSemilla)
+    await this.supabase.from(tabla).delete().eq(mapTable.id, idDatosSemilla)
   }
   // #endregion
   // #endregion

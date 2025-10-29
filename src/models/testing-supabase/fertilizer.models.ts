@@ -4,17 +4,23 @@ import { TablasMap } from '../../schemas/mappings'
 import { BDService } from '../../services/bd.services'
 import { ETablas } from '../../types/enums'
 import { IFertilizerModel } from '../definitions/fertilizer.models'
-import supabase from '../../config/supabase'
+import { SupabaseClient } from '@supabase/supabase-js'
+import { upsert } from '../../utils/supabase.utils'
 
 export class FertilizerModelTestingSupabase implements IFertilizerModel {
   Table: ETablas = ETablas.Fertilizante
   MapTable = TablasMap[this.Table]
 
+  supabase: SupabaseClient
+  constructor (supabase: SupabaseClient) {
+    this.supabase = supabase
+  }
+
   getAll = async (): Promise<IFertilizer[]> => {
     const mapTable = this.MapTable.map
     if (mapTable.name == null) return []
 
-    const { data } = await supabase.from(this.Table).select().order(mapTable.name)
+    const { data } = await this.supabase.from(this.Table).select().order(mapTable.name)
     if (data == null) return []
 
     return data.map((row) => {
@@ -27,7 +33,7 @@ export class FertilizerModelTestingSupabase implements IFertilizerModel {
     const mapTable = this.MapTable.map
     if (mapTable.id == null) return undefined
 
-    const { data } = await supabase.from(this.Table).select().eq(mapTable.id, id).single()
+    const { data } = await this.supabase.from(this.Table).select().eq(mapTable.id, id).single()
     if (data == null) return undefined
 
     const fertilizerDt = BDService.getObjectFromTable(this.Table, data, true)
@@ -40,14 +46,14 @@ export class FertilizerModelTestingSupabase implements IFertilizerModel {
       id: randomUUID()
     }
 
-    const error = await BDService.upsert<IFertilizer>(this.Table, newFertilizer)
+    const error = await upsert<IFertilizer>(this.supabase, this.Table, newFertilizer)
     if (error != null) throw new Error('Error al crear el fertilizante')
 
     return newFertilizer
   }
 
   update = async (fertilizer: IFertilizer): Promise<void> => {
-    const error = await BDService.upsert(this.Table, fertilizer)
+    const error = await upsert(this.supabase, this.Table, fertilizer)
     if (error != null) throw new Error('Error al actualizar el fertilizante')
   }
 
@@ -55,6 +61,6 @@ export class FertilizerModelTestingSupabase implements IFertilizerModel {
     const mapTable = this.MapTable.map
     if (mapTable.id == null) return
 
-    await supabase.from(this.Table).delete().eq(mapTable.id, id)
+    await this.supabase.from(this.Table).delete().eq(mapTable.id, id)
   }
 }

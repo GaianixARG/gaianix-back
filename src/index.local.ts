@@ -5,7 +5,7 @@ import { OrderModelLocalPostgres } from './models/localhost-postgres/orders.mode
 import { SeedModelLocalPostgres } from './models/localhost-postgres/seeds.models'
 import { UserModelLocalPostgres } from './models/localhost-postgres/users.models'
 
-export const appLocal = createApp({
+createApp({
   orderModel: new OrderModelLocalPostgres(),
   seedModel: new SeedModelLocalPostgres(),
   userModel: new UserModelLocalPostgres(),

@@ -4,12 +4,18 @@ import { IOrderFertilizacion, IOrderBase, ICreateDatosFertilizacion, orderFertil
 import { BDService } from '../../services/bd.services'
 import { EOrderType, ETablas } from '../../types/enums'
 import { IOrderFertilizacionModel } from '../definitions/orderFertilizacion.models'
-import supabase from '../../config/supabase'
 import { querySelectOrdenByTypeSupabase } from '../../utils/order.utils'
+import { SupabaseClient } from '@supabase/supabase-js'
+import { upsert } from '../../utils/supabase.utils'
 
 export class OrderFertilizacionModelTestingSupabase implements IOrderFertilizacionModel {
   Table = ETablas.OrdenFertilizacion
   MapTable = TablasMap[this.Table].map
+
+  supabase: SupabaseClient
+  constructor (supabase: SupabaseClient) {
+    this.supabase = supabase
+  }
 
   getAll = async (): Promise<IOrderFertilizacion[]> => {
     const tableOrder = ETablas.Order
@@ -18,7 +24,7 @@ export class OrderFertilizacionModelTestingSupabase implements IOrderFertilizaci
 
     const query = querySelectOrdenByTypeSupabase(EOrderType.Fertilizacion)
 
-    const { data } = await supabase.from(tableOrder).select(query).eq(mapTableOrder.type, EOrderType.Fertilizacion).order(mapTableOrder.dateOfCreation)
+    const { data } = await this.supabase.from(tableOrder).select(query).eq(mapTableOrder.type, EOrderType.Fertilizacion).order(mapTableOrder.dateOfCreation)
     if (data == null) return []
 
     return data.map((row) => {
@@ -34,7 +40,7 @@ export class OrderFertilizacionModelTestingSupabase implements IOrderFertilizaci
 
     const query = querySelectOrdenByTypeSupabase(EOrderType.Fertilizacion)
 
-    const { data } = await supabase.from(tableOrder).select(query).eq(mapTableOrder.id, id).single()
+    const { data } = await this.supabase.from(tableOrder).select(query).eq(mapTableOrder.id, id).single()
     if (data == null) return undefined
 
     const orderDt = BDService.getObjectFromTable(tableOrder, data, true)
@@ -50,7 +56,7 @@ export class OrderFertilizacionModelTestingSupabase implements IOrderFertilizaci
   }
 
   update = async (datosFertilizacion: IDatosFertilizacion): Promise<void> => {
-    const error = await BDService.upsert<IDatosFertilizacion>(this.Table, datosFertilizacion)
+    const error = await upsert<IDatosFertilizacion>(this.supabase, this.Table, datosFertilizacion)
     if (error != null) throw new Error('Error al actualizar la orden de fertilización')
   }
 
@@ -60,7 +66,7 @@ export class OrderFertilizacionModelTestingSupabase implements IOrderFertilizaci
     const mapTable = this.MapTable
     if (mapTable.id == null) return
 
-    await supabase.from(this.Table).delete().eq(mapTable.id, orderFert.fertilizacion.id)
+    await this.supabase.from(this.Table).delete().eq(mapTable.id, orderFert.fertilizacion.id)
   }
 
   // #region Utils
@@ -71,7 +77,7 @@ export class OrderFertilizacionModelTestingSupabase implements IOrderFertilizaci
       id: randomUUID()
     }
 
-    const error = await BDService.upsert<IDatosFertilizacion>(this.Table, newDatosFertilizacion)
+    const error = await upsert<IDatosFertilizacion>(this.supabase, this.Table, newDatosFertilizacion)
     if (error != null) throw new Error('Error al insertar los datos de la cosecha')
 
     return newDatosFertilizacion
