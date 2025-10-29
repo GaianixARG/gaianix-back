@@ -8,7 +8,7 @@
     "prod": "ts-node-dev --env-file .env.prod src/index.testing.ts",
     "lint": "ts-standard",
     "build": "tsc",
-    "start": "node src/index.testing.js",
+    "start": "node dist/index.testing.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
