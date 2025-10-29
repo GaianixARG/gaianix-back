@@ -25,7 +25,7 @@ export interface AppModels {
 export const createApp = ({ orderModel, userModel, seedModel, loteModel, fertilizerModel }: AppModels): express.Express => {
   const app = express()
   app.use(cors({
-    origin: '*',
+    origin: 'http://localhost:5173/',
     credentials: true
   }))
   app.use(express.json())
@@ -46,12 +46,5 @@ export const createApp = ({ orderModel, userModel, seedModel, loteModel, fertili
     console.log(`📑 Swagger docs: http://localhost:${port}/api/docs`)
   })
 
-  // if (config.nodeEnv !== 'production') {
-  //   const port = config.port
-  //   app.listen(port, () => {
-  //     console.log(`🚀 Gaianix backend running on http://localhost:${port}`)
-  //     console.log(`📑 Swagger docs: http://localhost:${port}/api/docs`)
-  //   })
-  // }
   return app
 }

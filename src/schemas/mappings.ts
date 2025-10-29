@@ -152,6 +152,7 @@ export const TablasMap: Record<ETablas, UsosTabla<any, any>> = {
       objKeys.forEach((k) => {
         switch (k) {
           case 'password': obj[k] = bcrypt.hashSync(datos.password, 10); break
+          case 'role': obj[k] = datos.role.id; break
           default: obj[k] = datos[k]; break
         }
       })
