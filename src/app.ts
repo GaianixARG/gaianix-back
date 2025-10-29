@@ -25,7 +25,7 @@ export interface AppModels {
 export const createApp = ({ orderModel, userModel, seedModel, loteModel, fertilizerModel }: AppModels): express.Express => {
   const app = express()
   app.use(cors({
-    origin: 'http://localhost:5173/',
+    origin: ['http://localhost:5173', 'gaianix-front.vercel.app'],
     credentials: true
   }))
   app.use(express.json())
