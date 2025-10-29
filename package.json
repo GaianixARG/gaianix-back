@@ -2,7 +2,6 @@
   "name": "gaianix-back",
   "version": "1.0.0",
   "main": "src/index.testing.ts",
-  "type": "module",
   "scripts": {
     "dev": "ts-node-dev --env-file .env.local src/index.local.ts",
     "testing": "ts-node-dev --env-file .env.testing src/index.testing.ts",
