@@ -40,12 +40,18 @@ export const createApp = ({ orderModel, userModel, seedModel, loteModel, fertili
 
   setupSwagger(app)
 
-  if (config.nodeEnv !== 'production') {
-    const port = config.port
-    app.listen(port, () => {
-      console.log(`🚀 Gaianix backend running on http://localhost:${port}`)
-      console.log(`📑 Swagger docs: http://localhost:${port}/api/docs`)
-    })
-  }
+  const port = config.port
+  app.listen(port, () => {
+    console.log(`🚀 Gaianix backend running on http://localhost:${port}`)
+    console.log(`📑 Swagger docs: http://localhost:${port}/api/docs`)
+  })
+
+  // if (config.nodeEnv !== 'production') {
+  //   const port = config.port
+  //   app.listen(port, () => {
+  //     console.log(`🚀 Gaianix backend running on http://localhost:${port}`)
+  //     console.log(`📑 Swagger docs: http://localhost:${port}/api/docs`)
+  //   })
+  // }
   return app
 }
