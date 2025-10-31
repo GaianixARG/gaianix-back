@@ -17,8 +17,8 @@ export const TokenPerExpiresIn: Record<ECookie, number> = {
 export const getConfigCookie = (cookie: ECookie): CookieOptions => {
   return {
     httpOnly: true, // solo se puede acceder desde el servidor
-    secure: config.nodeEnv === 'production', // solo se puede acceder en HTPPS
-    sameSite: true, // solo accesible en el mismo dominio
+    secure: config.nodeEnv === 'production', // solo se puede acceder en HTTPS
+    sameSite: config.nodeEnv === 'production' ? 'none' : 'lax', // solo accesible en el mismo dominio
     maxAge: CookiePerMaxAge[cookie]
   }
 }
