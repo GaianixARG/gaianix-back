@@ -1,7 +1,7 @@
-import { IOrder, ICreateOrder, orderSchema, IOrderBase, IUpdateOrderBase, IUpdateOrder } from '../../schemas/order.schema'
+import { IOrder, ICreateOrder, orderSchema, IOrderBase, IUpdateOrderBase, IUpdateOrder, IUpdateStatusOrder } from '../../schemas/order.schema'
 import { IUserPrivate } from '../../schemas/user.schema'
 import { IOrderModel } from '../definitions/orders.models'
-import { EOrderType, ETablas } from '../../types/enums'
+import { EOrderType, EStatus, ETablas } from '../../types/enums'
 import { BDService } from '../../services/bd.services'
 import { TablasMap } from '../../schemas/mappings'
 import { ILote } from '../../schemas/lote.schema'
@@ -11,7 +11,7 @@ import { OrderFertilizacionModelTestingSupabase } from './orderFertilizacion.mod
 import { OrderSiembraModelTestingSupabase } from './orderSiembra.models'
 import { querySelectOrdenByTypeSupabase } from '../../utils/order.utils'
 import { SupabaseClient } from '@supabase/supabase-js'
-import { upsert } from '../../utils/supabase.utils'
+import { update, insert } from '../../utils/supabase.utils'
 
 interface IOrderModels {
   orderSiembraModel: OrderSiembraModelTestingSupabase
@@ -85,10 +85,15 @@ export class OrderModelTestingSupabase implements IOrderModel {
     const newOrder = await this.createOrderByType(orderBase, order)
     if (newOrder == null) throw new Error('Error al crear la orden de trabajo')
 
-    const error = await upsert<IOrder>(this.supabase, this.Table, newOrder)
+    const error = await insert<IOrder>(this.supabase, this.Table, newOrder)
     if (error != null) throw new Error('Error al crear la orden de trabajo')
 
     return newOrder
+  }
+
+  updateStatus = async (orderId: string, newStatus: EStatus): Promise<void> => {
+    const error = await update<IUpdateStatusOrder>(this.supabase, this.Table, { id: orderId, status: newStatus })
+    if (error != null) throw error
   }
 
   update = async (order: IUpdateOrder): Promise<void> => {
@@ -110,8 +115,8 @@ export class OrderModelTestingSupabase implements IOrderModel {
     }
     if (orderToUpdate == null) throw new Error('Error al actualizar la orden')
 
-    const error = await upsert<IUpdateOrderBase>(this.supabase, this.Table, orderToUpdate)
-    if (error != null) throw new Error('Error al crear la orden de trabajo')
+    const error = await update<IUpdateOrderBase>(this.supabase, this.Table, orderToUpdate)
+    if (error != null) throw error
   }
 
   remove = async (id: string): Promise<void> => {

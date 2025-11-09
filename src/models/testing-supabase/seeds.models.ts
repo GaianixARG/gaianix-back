@@ -5,7 +5,7 @@ import { BDService } from '../../services/bd.services'
 import { ETablas } from '../../types/enums'
 import { ISeedModel } from '../definitions/seeds.models'
 import { SupabaseClient } from '@supabase/supabase-js'
-import { upsert } from '../../utils/supabase.utils'
+import { update, insert } from '../../utils/supabase.utils'
 
 export class SeedModelTestingSupabase implements ISeedModel {
   Table: ETablas = ETablas.Seed
@@ -46,14 +46,14 @@ export class SeedModelTestingSupabase implements ISeedModel {
       id: randomUUID()
     }
 
-    const error = await upsert<ISeed>(this.supabase, this.Table, newSeed)
+    const error = await insert<ISeed>(this.supabase, this.Table, newSeed)
     if (error != null) throw new Error('Error al crear la semilla')
 
     return newSeed
   }
 
   update = async (seed: ISeed): Promise<void> => {
-    const error = await upsert(this.supabase, this.Table, seed)
+    const error = await update(this.supabase, this.Table, seed)
     if (error != null) throw new Error('Error al actualizar la semilla')
   }
 

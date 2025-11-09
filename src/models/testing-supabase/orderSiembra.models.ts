@@ -6,7 +6,7 @@ import { EOrderType, ETablas } from '../../types/enums'
 import { IOrderSiembraModel } from '../definitions/orderSiembra.models'
 import { querySelectOrdenByTypeSupabase } from '../../utils/order.utils'
 import { SupabaseClient } from '@supabase/supabase-js'
-import { upsert } from '../../utils/supabase.utils'
+import { update, insert } from '../../utils/supabase.utils'
 
 export class OrderSiembraModelTestingSupabase implements IOrderSiembraModel {
   Table = ETablas.OrdenSiembra
@@ -56,7 +56,7 @@ export class OrderSiembraModelTestingSupabase implements IOrderSiembraModel {
   update = async (datosSiembra: IDatosSiembra): Promise<void> => {
     await this.updateDatosSemillaPorSiembra(datosSiembra.datosSemilla)
 
-    const error = await upsert<IDatosSiembra>(this.supabase, this.Table, datosSiembra)
+    const error = await update<IDatosSiembra>(this.supabase, this.Table, datosSiembra)
     if (error != null) throw new Error('Error al crear la orden de trabajo')
   }
 
@@ -80,7 +80,7 @@ export class OrderSiembraModelTestingSupabase implements IOrderSiembraModel {
       id: randomUUID()
     }
 
-    const error = await upsert<IDatosSemilla>(this.supabase, tabla, newDatosSemilla)
+    const error = await insert<IDatosSemilla>(this.supabase, tabla, newDatosSemilla)
     if (error != null) throw new Error('Error al insertar los datos de la siembra')
 
     return newDatosSemilla
@@ -95,7 +95,7 @@ export class OrderSiembraModelTestingSupabase implements IOrderSiembraModel {
       datosSemilla: semillaXSiembra,
       id: randomUUID()
     }
-    const error = await upsert<IDatosSiembra>(this.supabase, this.Table, newDatosSiembra)
+    const error = await insert<IDatosSiembra>(this.supabase, this.Table, newDatosSiembra)
     if (error != null) throw new Error('Error al insertar la Orden de Trabajo de Siembra')
 
     return newDatosSiembra
@@ -104,7 +104,7 @@ export class OrderSiembraModelTestingSupabase implements IOrderSiembraModel {
 
   // #region Update
   updateDatosSemillaPorSiembra = async (datos: IDatosSemilla): Promise<void> => {
-    const error = await upsert<IDatosSemilla>(this.supabase, ETablas.SemillaPorSiembra, datos)
+    const error = await update<IDatosSemilla>(this.supabase, ETablas.SemillaPorSiembra, datos)
     if (error != null) throw new Error('Error al actualizar la orden de siembra')
   }
   // #endregion

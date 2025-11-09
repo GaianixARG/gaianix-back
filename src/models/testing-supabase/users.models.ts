@@ -5,7 +5,7 @@ import { BDService } from '../../services/bd.services'
 import { ETablas } from '../../types/enums'
 import { IUserModel } from '../definitions/users.models'
 import { SupabaseClient } from '@supabase/supabase-js'
-import { getValuesToSupabase, querySelectSupabase } from '../../utils/supabase.utils'
+import { querySelectSupabase, insert } from '../../utils/supabase.utils'
 
 export class UserModelTestingSupabase implements IUserModel {
   Table: ETablas = ETablas.User
@@ -69,9 +69,8 @@ export class UserModelTestingSupabase implements IUserModel {
       id: randomUUID()
     }
 
-    const values = getValuesToSupabase<IUser>(this.Table, newUser)
-    const { error } = await this.supabase.from(this.Table).insert(values)
-    if (error != null) throw new Error('Error al crear el usuario')
+    const error = await insert<IUser>(this.supabase, this.Table, newUser)
+    if (error != null) throw error
 
     return newUser
   }

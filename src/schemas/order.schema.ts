@@ -120,6 +120,11 @@ export const orderSchema = z.discriminatedUnion('type', [
   orderCosechaSchema
 ])
 
+export const orderUdpateStatusSchema = z.object({
+  id: z.uuid(),
+  status: z.enum(EStatus)
+})
+
 export const createOrderSchema = z.discriminatedUnion('type', [
   createOrderSiembraSchema,
   createOrderFertilizacionSchema,
@@ -140,6 +145,7 @@ export type IUpdateOrderBase = Omit<IOrderBase, KeysOmitUpdateOrder>
 export type IOrder = z.infer<typeof orderSchema>
 export type ICreateOrder = z.infer<typeof createOrderSchema>
 export type IUpdateOrder = MyOmit<IOrder, KeysOmitUpdateOrder>
+export type IUpdateStatusOrder = z.infer<typeof orderUdpateStatusSchema>
 
 // Siembra
 export type IDatosSemilla = z.infer<typeof datosSemillaSchema>

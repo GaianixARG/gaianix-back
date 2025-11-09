@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { IOrder, ICreateOrder } from '../schemas/order.schema'
+import { IOrder, ICreateOrder, IUpdateStatusOrder } from '../schemas/order.schema'
 import sendData from './response.controller'
 import { EHttpStatusCode, EOrderType } from '../types/enums'
 import { getValidatedBody } from '../middlewares/validateBody'
@@ -102,11 +102,33 @@ export class OrderController {
       restOfOrder.lote = lote
       await this.models.orderModel.update(restOfOrder)
     } catch (error) {
+      console.log(error)
       exito = false
     } finally {
       sendData(res,
         exito ? EHttpStatusCode.OK_NO_CONTENT : EHttpStatusCode.BAD_REQUEST,
         exito ? undefined : { exito, message: 'Error al editar la orden' }
+      )
+    }
+  }
+
+  updateStatusOrder = async (req: Request, res: Response): Promise<void> => {
+    const id = req.params.id
+    const bodyOrder = getValidatedBody<IUpdateStatusOrder>(req)
+
+    let exito = true
+    try {
+      if (id !== bodyOrder.id) {
+        sendData(res, EHttpStatusCode.BAD_REQUEST, { exito: false, message: 'Orden invalida' })
+        return
+      }
+      await this.models.orderModel.updateStatus(bodyOrder.id, bodyOrder.status)
+    } catch (error) {
+      exito = false
+    } finally {
+      sendData(res,
+        exito ? EHttpStatusCode.OK_NO_CONTENT : EHttpStatusCode.BAD_REQUEST,
+        exito ? undefined : { exito, message: 'Error al actualizar el estado de la orden' }
       )
     }
   }

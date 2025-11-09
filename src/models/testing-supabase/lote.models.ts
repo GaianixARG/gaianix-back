@@ -5,7 +5,7 @@ import { BDService } from '../../services/bd.services'
 import { ETablas } from '../../types/enums'
 import { ILoteModel } from '../definitions/lote.models'
 import { SupabaseClient } from '@supabase/supabase-js'
-import { querySelectSupabase, upsert } from '../../utils/supabase.utils'
+import { querySelectSupabase, insert } from '../../utils/supabase.utils'
 
 export class LoteModelTestingSupabase implements ILoteModel {
   Table: ETablas = ETablas.Lote
@@ -48,7 +48,7 @@ export class LoteModelTestingSupabase implements ILoteModel {
       id: randomUUID()
     }
 
-    const error = await upsert<ILote>(this.supabase, this.Table, newLote)
+    const error = await insert<ILote>(this.supabase, this.Table, newLote)
     if (error != null) throw new Error('Error al crear el lote')
 
     return newLote

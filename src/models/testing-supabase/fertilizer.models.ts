@@ -5,7 +5,7 @@ import { BDService } from '../../services/bd.services'
 import { ETablas } from '../../types/enums'
 import { IFertilizerModel } from '../definitions/fertilizer.models'
 import { SupabaseClient } from '@supabase/supabase-js'
-import { upsert } from '../../utils/supabase.utils'
+import { update, insert } from '../../utils/supabase.utils'
 
 export class FertilizerModelTestingSupabase implements IFertilizerModel {
   Table: ETablas = ETablas.Fertilizante
@@ -46,14 +46,14 @@ export class FertilizerModelTestingSupabase implements IFertilizerModel {
       id: randomUUID()
     }
 
-    const error = await upsert<IFertilizer>(this.supabase, this.Table, newFertilizer)
+    const error = await insert<IFertilizer>(this.supabase, this.Table, newFertilizer)
     if (error != null) throw new Error('Error al crear el fertilizante')
 
     return newFertilizer
   }
 
   update = async (fertilizer: IFertilizer): Promise<void> => {
-    const error = await upsert(this.supabase, this.Table, fertilizer)
+    const error = await update(this.supabase, this.Table, fertilizer)
     if (error != null) throw new Error('Error al actualizar el fertilizante')
   }
 

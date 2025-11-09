@@ -1,8 +1,8 @@
-import { IOrder, ICreateOrder, orderSchema, IOrderBase, IUpdateOrder, IUpdateOrderBase } from '../../schemas/order.schema'
+import { IOrder, ICreateOrder, orderSchema, IOrderBase, IUpdateOrder, IUpdateOrderBase, IUpdateStatusOrder } from '../../schemas/order.schema'
 import { IUserPrivate } from '../../schemas/user.schema'
 import pool from '../../config/db'
 import { IOrderModel } from '../definitions/orders.models'
-import { EOrderType, ETablas } from '../../types/enums'
+import { EOrderType, EStatus, ETablas } from '../../types/enums'
 import { BDService } from '../../services/bd.services'
 import { TablasMap } from '../../schemas/mappings'
 import { ILote } from '../../schemas/lote.schema'
@@ -81,6 +81,12 @@ export class OrderModelLocalPostgres implements IOrderModel {
     if (result.rowCount == null || result.rowCount === 0) throw new Error('Error al crear la orden de trabajo')
 
     return newOrder
+  }
+
+  updateStatus = async (orderId: string, newStatus: EStatus): Promise<void> => {
+    const datosUpdate = BDService.queryUpdate<IUpdateStatusOrder>(ETablas.Order, { id: orderId, status: newStatus }, true)
+    const result = await pool.query(datosUpdate.query, [...datosUpdate.values, orderId])
+    if (result == null || result.rowCount === 0) throw new Error('Error al actualizar el fertilizante')
   }
 
   update = async (order: IUpdateOrder): Promise<void> => {

@@ -6,7 +6,7 @@ import { IOrderCosechaModel } from '../definitions/orderCosecha.models'
 import { TablasMap } from '../../schemas/mappings'
 import { querySelectOrdenByTypeSupabase } from '../../utils/order.utils'
 import { SupabaseClient } from '@supabase/supabase-js'
-import { upsert } from '../../utils/supabase.utils'
+import { update, insert } from '../../utils/supabase.utils'
 
 export class OrderCosechaModelTestingSupabase implements IOrderCosechaModel {
   Table = ETablas.OrdenCosecha
@@ -56,7 +56,7 @@ export class OrderCosechaModelTestingSupabase implements IOrderCosechaModel {
   }
 
   update = async (datosCosecha: IDatosCosecha): Promise<void> => {
-    const error = await upsert<IDatosCosecha>(this.supabase, this.Table, datosCosecha)
+    const error = await update<IDatosCosecha>(this.supabase, this.Table, datosCosecha)
     if (error != null) throw new Error('Error al actualizar la orden de cosecha')
   }
 
@@ -75,7 +75,7 @@ export class OrderCosechaModelTestingSupabase implements IOrderCosechaModel {
       id: randomUUID()
     }
 
-    const error = await upsert<IDatosCosecha>(this.supabase, this.Table, newDatosCosecha)
+    const error = await insert<IDatosCosecha>(this.supabase, this.Table, newDatosCosecha)
     if (error != null) throw new Error('Error al insertar los datos de la cosecha')
 
     return newDatosCosecha

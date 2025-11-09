@@ -2,11 +2,17 @@ import { IOrder, ICreateOrder, IOrderBase, IUpdateOrder } from '../../schemas/or
 import ordersData from '../../data/orders.json'
 import { IUserPrivate } from '../../schemas/user.schema'
 import { IOrderModel } from '../definitions/orders.models'
-import { EOrderType } from '../../types/enums'
+import { EOrderType, EStatus } from '../../types/enums'
 
 const orders: IOrder[] = ordersData as IOrder[]
 
 export class OrderModelFileSystem implements IOrderModel {
+  updateStatus = async (orderId: string, newStatus: EStatus): Promise<void> => {
+    const idx = orders.findIndex(x => x.id === orderId)
+    if (idx === -1) return
+    orders[idx].status = newStatus
+  }
+
   update = async (order: IUpdateOrder): Promise<void> => {
     const idx = orders.findIndex(x => x.id === order.id)
     if (idx === -1) return

@@ -28,8 +28,17 @@ export const getValuesToSupabase = <T extends {}>(tabla: ETablas, objectBody: T)
   return value
 }
 
-export const upsert = async <T extends {}>(clientSupabase: SupabaseClient, table: ETablas, datos: T): Promise<PostgrestError | null> => {
+export const update = async <T extends { id: string }>(clientSupabase: SupabaseClient, table: ETablas, datos: T): Promise<PostgrestError | null> => {
+  const { id, ...restOfData } = datos
+  const values = getValuesToSupabase<Omit<T, 'id'>>(table, restOfData)
+  const colId = TablasMap[table].map.id
+  if (colId == null) return null
+  const { error } = await clientSupabase.from(table).update(values).eq(colId, id)
+  return error
+}
+
+export const insert = async <T extends {}>(clientSupabase: SupabaseClient, table: ETablas, datos: T): Promise<PostgrestError | null> => {
   const values = getValuesToSupabase<T>(table, datos)
-  const { error } = await clientSupabase.from(table).upsert(values)
+  const { error } = await clientSupabase.from(table).insert(values)
   return error
 }

@@ -6,7 +6,7 @@ import { EOrderType, ETablas } from '../../types/enums'
 import { IOrderFertilizacionModel } from '../definitions/orderFertilizacion.models'
 import { querySelectOrdenByTypeSupabase } from '../../utils/order.utils'
 import { SupabaseClient } from '@supabase/supabase-js'
-import { upsert } from '../../utils/supabase.utils'
+import { update, insert } from '../../utils/supabase.utils'
 
 export class OrderFertilizacionModelTestingSupabase implements IOrderFertilizacionModel {
   Table = ETablas.OrdenFertilizacion
@@ -56,7 +56,7 @@ export class OrderFertilizacionModelTestingSupabase implements IOrderFertilizaci
   }
 
   update = async (datosFertilizacion: IDatosFertilizacion): Promise<void> => {
-    const error = await upsert<IDatosFertilizacion>(this.supabase, this.Table, datosFertilizacion)
+    const error = await update<IDatosFertilizacion>(this.supabase, this.Table, datosFertilizacion)
     if (error != null) throw new Error('Error al actualizar la orden de fertilización')
   }
 
@@ -77,7 +77,7 @@ export class OrderFertilizacionModelTestingSupabase implements IOrderFertilizaci
       id: randomUUID()
     }
 
-    const error = await upsert<IDatosFertilizacion>(this.supabase, this.Table, newDatosFertilizacion)
+    const error = await insert<IDatosFertilizacion>(this.supabase, this.Table, newDatosFertilizacion)
     if (error != null) throw new Error('Error al insertar los datos de la cosecha')
 
     return newDatosFertilizacion

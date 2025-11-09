@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { IOrderController, OrderController } from '../controllers/orders.controller'
 import { validateBody } from '../middlewares/validateBody'
-import { createOrderSchema, orderSchema } from '../schemas/order.schema'
+import { createOrderSchema, orderSchema, orderUdpateStatusSchema } from '../schemas/order.schema'
 import { authenticateJWT } from '../middlewares/auth'
 
 export const createOrderRouter = (models: IOrderController): Router => {
@@ -76,6 +76,8 @@ export const createOrderRouter = (models: IOrderController): Router => {
   orderRouter.post('/', authenticateJWT, validateBody(createOrderSchema), orderController.createOrder)
 
   orderRouter.put('/:id', authenticateJWT, validateBody(orderSchema), orderController.updateOrder)
+
+  orderRouter.patch('/:id', authenticateJWT, validateBody(orderUdpateStatusSchema), orderController.updateStatusOrder)
 
   orderRouter.delete('/:id', authenticateJWT, orderController.removeOrder)
 
