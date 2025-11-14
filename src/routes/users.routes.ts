@@ -9,6 +9,7 @@ export const createUserRouter = (models: IUserController): Router => {
 
   const userController = new UserController(models)
 
+  userRouter.post('/auth', authenticateJWT, userController.refreshAuth)
   userRouter.post('/login', validateBody(loginSchema), userController.login)
   userRouter.post('/logout', userController.logout)
   userRouter.post('/', authenticateJWT, validateBody(createUserSchema), userController.create)

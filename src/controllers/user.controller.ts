@@ -6,7 +6,7 @@ import { ECookie, EHttpStatusCode } from '../types/enums'
 import { getValidatedBody } from '../middlewares/validateBody'
 import { ICreateUser, ILoginUser } from '../schemas/user.schema'
 import { getConfigCookie } from '../config/cookie'
-import { getUserSession } from '../middlewares/auth'
+import { getUserSession, clearCookieToken } from '../middlewares/auth'
 import { IUserModel } from '../models/definitions/users.models'
 
 export interface IUserController {
@@ -17,6 +17,10 @@ export class UserController {
   models: IUserController
   constructor (models: IUserController) {
     this.models = models
+  }
+
+  refreshAuth = async (_req: Request, res: Response): Promise<void> => {
+    res.send({ exito: true, message: 'Login exitoso' })
   }
 
   login = async (req: Request, res: Response): Promise<void> => {
@@ -36,7 +40,7 @@ export class UserController {
       res
         .cookie(ECookie.ACCESS_TOKEN, accessToken, getConfigCookie(ECookie.ACCESS_TOKEN))
         // .cookie(ECookie.REFRESH_TOKEN, refresh_token, getConfigCookie(ECookie.REFRESH_TOKEN))
-        .send({ exito: true, data: { accessToken, user: restOfUser } })
+        .send({ exito: true, data: { name: restOfUser.name } })
     } catch (error) {
       console.log(error)
       responseData(res,
@@ -47,8 +51,8 @@ export class UserController {
   }
 
   logout = (_req: Request, res: Response): void => {
-    res.clearCookie(ECookie.ACCESS_TOKEN).send(
-      { message: 'Logout exitoso (borrar token en cliente) }', exito: true })
+    clearCookieToken(res)
+    res.send({ message: 'Logout exitoso', exito: true })
   }
 
   create = async (req: Request, res: Response): Promise<void> => {
