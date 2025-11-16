@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { userPrivateSchema } from './user.schema'
 import { seedSchema } from './seed.schema'
-import { EOrderType, EPrioridad, EStatus } from '../types/enums'
+import { EMetodoFertilizacion, EOrderType, EPrioridad, EStatus } from '../types/enums'
 import { loteSchema } from './lote.schema'
 import { fertilizerSchema } from './fertilizer.schema'
 
@@ -77,7 +77,7 @@ const datosFertilizacionSchema = z.object({
   id: z.uuid(),
   fertilizante: fertilizerSchema,
   dosisKgHa: z.number(),
-  metodo: z.string()
+  metodo: z.enum(EMetodoFertilizacion)
 })
 
 const createDatosFertilizacionSchema = datosFertilizacionSchema.omit({ id: true })

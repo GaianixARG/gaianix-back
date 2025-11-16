@@ -71,3 +71,10 @@ export enum ETablas {
   Lote = 'Lote',
   Fertilizante = 'Fertilizante'
 }
+
+export enum EMetodoFertilizacion {
+  FondoSurco,
+  Fertirrigacion,
+  Foliar,
+  Localizada
+}
