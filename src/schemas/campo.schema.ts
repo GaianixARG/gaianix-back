@@ -1,7 +1,7 @@
 import z from 'zod'
 
 export const campoSchema = z.object({
-  id: z.uuid(),
+  id: z.uuid().or(z.literal('')),
   nombre: z.string()
 })
 

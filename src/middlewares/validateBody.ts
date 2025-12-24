@@ -7,6 +7,7 @@ export const validateBody =
   <T extends ZodType>(schema: T) => (req: Request, res: Response, next: NextFunction) => {
     try {
       (req as any).validatedBody = schema.parse(req.body)
+
       next()
     } catch (error: any) {
       if (error instanceof ZodError) {

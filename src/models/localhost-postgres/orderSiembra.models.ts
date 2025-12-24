@@ -51,6 +51,7 @@ export class OrderSiembraModelLocalPostgres implements IOrderSiembraModel {
     await this.updateDatosSemillaPorSiembra(restOfSiembra.datosSemilla)
 
     const datosUpdate = BDService.queryUpdate<ICreateDatosSiembra>(ETablas.OrdenSiembra, restOfSiembra, true)
+
     const result = await pool.query(datosUpdate.query, [...datosUpdate.values, id])
     if (result == null || result.rowCount === 0) throw new Error('Error al actualizar la orden de siembra')
   }

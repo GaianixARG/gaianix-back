@@ -25,3 +25,8 @@ export const getTableRels = (tabla: ETablas): string[] => {
 
   return relations
 }
+
+
+export const randomColor = (): string => {
+  return '#' + (0x1000000 + Math.random() * 0xFFFFFF).toString(16).substr(1,6)
+}

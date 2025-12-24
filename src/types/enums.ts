@@ -69,7 +69,9 @@ export enum ETablas {
   SemillaPorSiembra = 'SemillaXSiembra',
   Campo = 'Campo',
   Lote = 'Lote',
-  Fertilizante = 'Fertilizante'
+  Fertilizante = 'Fertilizante',
+  PoligonoLote = 'PoligonoLote',
+  Coordenada = 'Coordenada'
 }
 
 export enum EMetodoFertilizacion {
@@ -77,4 +79,9 @@ export enum EMetodoFertilizacion {
   Fertirrigacion,
   Foliar,
   Localizada
+}
+
+export enum ETipoPoligono {
+  Poligono = 'Polygon',
+  Circle = 'Point'
 }

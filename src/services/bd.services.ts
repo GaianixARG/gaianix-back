@@ -40,7 +40,7 @@ export class BDService {
     const tableMap = TablasMap[tabla]
     const mapTable = tableMap.map
 
-    const objectKeys = Object.keys(mapTable).map(x => x as AllKeys)
+    const objectKeys = Object.keys(mapTable).map(x => x as AllKeys).filter(x => mapTable[x] !== '')
 
     // ESTO PARA QUE QUEDE ORDENADO EN LA QUERY
     const columns = objectKeys.map(x => mapTable[x]).join(',')

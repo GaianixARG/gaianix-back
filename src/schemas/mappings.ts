@@ -4,7 +4,7 @@ import { IRol, IUser } from '../schemas/user.schema'
 import { EOrderType, ETablas } from '../types/enums'
 import { ICampo } from './campo.schema'
 import { ICreateFertilizer, IFertilizer } from './fertilizer.schema'
-import { ILote } from './lote.schema'
+import { ICoordenadaPoligono, ILote, IPoligonoLote } from './lote.schema'
 import bcrypt from 'bcrypt'
 
 // #region UTILS
@@ -51,6 +51,8 @@ export const SeedMap: Record<KeysSeed, string> = {
 // #region Campo
 export type KeysCampo = Keys<ICampo>
 export type KeysLote = Keys<ILote>
+export type KeysPoligonoLote = Keys<IPoligonoLote>
+export type KeysCoordPoligonoLote = Keys<ICoordenadaPoligono>
 
 export const CampoMap: Record<KeysCampo, string> = {
   id: 'cam_id',
@@ -60,8 +62,23 @@ export const CampoMap: Record<KeysCampo, string> = {
 export const LoteMap: Record<KeysLote, string> = {
   id: 'lot_id',
   codigo: 'lot_codigo',
-  campo: 'lot_campo'
+  campo: 'lot_campo',
+  poligono: 'lot_poligono'
+}
 
+export const PoligonoLoteMap: Record<KeysPoligonoLote, string> = {
+  id: 'pol_id',
+  color: 'pol_color',
+  type: 'pol_type',
+  radius: 'pol_radius',
+  coordenadas: ''
+}
+
+export const CoordenadaPoligonoLoteMap: Record<KeysCoordPoligonoLote, string> = {
+  id: 'clo_id',
+  poligono: 'clo_poligono',
+  lat: 'clo_lat',
+  lon: 'clo_lon'
 }
 // #endregion
 
@@ -128,8 +145,8 @@ export const DatosOrdenMap: Record<KeysOrden, string> = {
 // #endregion
 
 // #region TABLAS
-export type AllObjects = IUser | ISeed | IOrder | IDatosSemilla | IDatosSiembra | IDatosCosecha | IDatosFertilizacion | IFertilizer | ICampo | ILote
-export type AllKeys = KeysUser | KeysSeed | KeysOrden | KeysDatosSemilla | KeysDatosSiembra | KeysDatosCosecha | KeysDatosFertilizacion
+export type AllObjects = IUser | ISeed | IOrder | IDatosSemilla | IDatosSiembra | IDatosCosecha | IDatosFertilizacion | IFertilizer | ICampo | ILote | ICoordenadaPoligono | IPoligonoLote
+export type AllKeys = KeysUser | KeysSeed | KeysOrden | KeysDatosSemilla | KeysDatosSiembra | KeysDatosCosecha | KeysDatosFertilizacion | KeysCoordPoligonoLote | KeysPoligonoLote
 
 interface UsosTabla<T, K extends keyof T> {
   dt: string
@@ -298,13 +315,15 @@ export const TablasMap: Record<ETablas, UsosTabla<any, any>> = {
     alias: 'lot',
     map: LoteMap,
     rels: {
-      [ETablas.Campo]: 'lot_campo'
+      [ETablas.Campo]: 'lot_campo',
+      [ETablas.PoligonoLote]: 'lot_poligono'
     },
     values: (objKeys: KeysLote[], datos: ILote) => {
       const obj: Partial<Record<KeysLote, any>> = {}
       objKeys.forEach((k) => {
         switch (k) {
           case 'campo': obj[k] = datos.campo.id; break
+          case 'poligono': obj[k] = datos.poligono.id; break
           default: obj[k] = datos[k]; break
         }
       })
@@ -319,6 +338,37 @@ export const TablasMap: Record<ETablas, UsosTabla<any, any>> = {
     values: (objKeys: KeysFertilizer[], datos: IFertilizer) => {
       const obj: Partial<Record<KeysFertilizer, any>> = {}
       objKeys.forEach((k) => { obj[k] = datos[k] })
+      return obj
+    }
+  },
+  [ETablas.PoligonoLote]: {
+    dt: 'PoligonoLote',
+    alias: 'pol',
+    map: PoligonoLoteMap,
+    rels: {},
+    values: (objKeys: KeysPoligonoLote[], datos: IPoligonoLote) => {
+      const obj: Partial<Record<KeysPoligonoLote, any>> = {}
+      objKeys.forEach((k) => { obj[k] = datos[k] })
+      return obj
+    }
+  },
+  [ETablas.Coordenada]: {
+    dt: 'Coordenada',
+    alias: 'clo',
+    map: CoordenadaPoligonoLoteMap,
+    rels: {
+      [ETablas.PoligonoLote]: 'clo_poligono'
+    },
+    values: (objKeys: KeysCoordPoligonoLote[], datos: ICoordenadaPoligono) => {
+      const obj: Partial<Record<KeysCoordPoligonoLote, any>> = {}
+      objKeys.forEach((k) => {
+        let value: any
+        switch (k) {
+          case 'poligono': value = datos.poligono.id; break
+          default: value = datos[k]; break
+        }
+        obj[k] = value
+      })
       return obj
     }
   }

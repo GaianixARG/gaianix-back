@@ -16,7 +16,7 @@ export const getValuesToSupabase = <T extends {}>(tabla: ETablas, objectBody: T)
   const tableMap = TablasMap[tabla]
   const mapTable = tableMap.map
 
-  const objectKeys = Object.keys(objectBody).map(x => x as AllKeys)
+  const objectKeys = Object.keys(objectBody).map(x => x as AllKeys).filter(x => mapTable[x] !== '')
   const objectValues = tableMap.values(objectKeys, objectBody)
 
   const value: Record<string, any> = {}
@@ -39,6 +39,12 @@ export const update = async <T extends { id: string }>(clientSupabase: SupabaseC
 
 export const insert = async <T extends {}>(clientSupabase: SupabaseClient, table: ETablas, datos: T): Promise<PostgrestError | null> => {
   const values = getValuesToSupabase<T>(table, datos)
+  const { error } = await clientSupabase.from(table).insert(values)
+  return error
+}
+
+export const insertMultiple = async <T extends {}>(clientSupabase: SupabaseClient, table: ETablas, datos: T[]): Promise<PostgrestError | null> => {
+  const values = datos.map((d) => getValuesToSupabase<T>(table, d))
   const { error } = await clientSupabase.from(table).insert(values)
   return error
 }
