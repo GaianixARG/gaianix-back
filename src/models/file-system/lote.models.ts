@@ -11,9 +11,15 @@ export class LoteModelLocalPostgres implements ILoteModel {
   }
 
   create = async (lote: ICreateLote): Promise<ILote> => {
-    const newLote = {
+    const { coordenadas, ...resOfPoligono } = lote.poligono
+    const newLote: ILote = {
+      ...lote,
       id: '55',
-      ...lote
+      poligono: {
+        ...resOfPoligono,
+        coordenadas: coordenadas.map(x => ({ id: '1', ...x })),
+        id: '10'
+      }
     }
     lotes.push(newLote)
     return newLote
