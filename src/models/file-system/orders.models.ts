@@ -2,9 +2,18 @@ import { IOrder, ICreateOrder, IOrderBase, IUpdateOrder } from '../../schemas/or
 import ordersData from '../../data/orders.json'
 import { IUserPrivate } from '../../schemas/user.schema'
 import { IOrderModel } from '../definitions/orders.models'
-import { EOrderType, EStatus } from '../../types/enums'
+import { EOrderType, EStatus, ETipoPoligono } from '../../types/enums'
+import { IPoligonoLote } from '../../schemas/lote.schema'
 
 const orders: IOrder[] = ordersData as IOrder[]
+
+const initialPoligono: IPoligonoLote = {
+  id: '',
+  color: '',
+  coordenadas: [],
+  type: ETipoPoligono.Poligono,
+  radius: 0
+}
 
 export class OrderModelFileSystem implements IOrderModel {
   updateStatus = async (orderId: string, newStatus: EStatus): Promise<void> => {
@@ -48,7 +57,8 @@ export class OrderModelFileSystem implements IOrderModel {
         campo: {
           id: '1',
           nombre: ''
-        }
+        },
+        poligono: initialPoligono
       },
       prioridad: order.prioridad
     }

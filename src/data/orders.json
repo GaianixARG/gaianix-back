@@ -10,6 +10,13 @@
       "campo": {
         "id": "1",
         "nombre": "ASD"
+      },
+      "poligono": {
+        "id": "",
+        "color": "",
+        "coordenadas": [],
+        "type": "Polygon",
+        "radius": 0
       }
     },
     "dateOfCreation": "2025-08-19",
@@ -54,6 +61,13 @@
       "campo": {
         "id": "1",
         "nombre": "ASD"
+      },
+      "poligono": {
+        "id": "",
+        "color": "",
+        "coordenadas": [],
+        "type": "Polygon",
+        "radius": 0
       }
     },
     "dateOfCreation": "2025-08-15",
@@ -87,6 +101,13 @@
       "campo": {
         "id": "1",
         "nombre": "ASD"
+      },
+      "poligono": {
+        "id": "",
+        "color": "",
+        "coordenadas": [],
+        "type": "Polygon",
+        "radius": 0
       }
     },
     "dateOfCreation": "2025-08-10",
